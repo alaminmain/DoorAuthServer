@@ -1,0 +1,180 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Can be switched to "sqlite" for local dev
+  url      = env("DATABASE_URL")
+}
+
+// -------------------
+// Core Tenant & User Models
+// -------------------
+
+model Tenant {
+  id             String        @id @default(uuid())
+  name           String
+  domain         String        @unique
+  brandingConfig Json?
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  users        User[]
+  applications Application[]
+  roles        Role[]
+  auditLogs    AuditLog[]
+
+  @@map("tenants")
+}
+
+model User {
+  id                 String    @id @default(uuid())
+  loginId            String
+  userName           String?
+  email              String
+  passwordHash       String
+  companyName        String?
+  companyAddress     String?
+  designation        String?
+  contact            String?
+  isApproved         Boolean   @default(true)
+  isLocked           Boolean   @default(false)
+  isTwoFactorEnabled Boolean   @default(false)
+  twoFactorSecret    String?
+  lastLoginTime      DateTime?
+  passAttemptCount   Int       @default(0)
+  isPassExpired      Boolean   @default(false)
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId   String
+  roles      UserRole[]
+  auditLogs  AuditLog[]
+  passTokens PassToken[]
+
+  @@unique([tenantId, loginId])
+  @@unique([tenantId, email])
+  @@map("users")
+}
+
+// -------------------
+// Application & SSO Models
+// -------------------
+
+model Application {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  status       String   @default("active")
+  logoUrl      String?
+  appUrl       String?
+  clientId     String   @unique @default(uuid())
+  clientSecret String
+  redirectUris String[]
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+  menus    Menu[]
+
+  @@map("applications")
+}
+
+// -------------------
+// RBAC (Roles & Permissions)
+// -------------------
+
+model Role {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  isSystem    Boolean      @default(false)
+  status      String       @default("active")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId    String
+  users       UserRole[]
+  permissions Permission[]
+
+  @@unique([tenantId, name])
+  @@map("roles")
+}
+
+model UserRole {
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId String
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model Permission {
+  id       String @id @default(uuid())
+  resource String // e.g., "payroll"
+  action   String // e.g., "read", "write"
+
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId String
+
+  @@unique([roleId, resource, action])
+  @@map("permissions")
+}
+
+// -------------------
+// Dynamic Menu & Security Models
+// -------------------
+
+model Menu {
+  id                 String  @id @default(uuid())
+  label              String
+  path               String
+  icon               String?
+  order              Int
+  requiredPermission String? // e.g., "payroll:read"
+
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String
+  parent        Menu?       @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentId      String?
+  children      Menu[]      @relation("MenuHierarchy")
+
+  @@map("menus")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  resource  String
+  ipAddress String?
+  userAgent String?
+  details   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+
+  @@map("audit_logs")
+}
+
+model PassToken {
+  id            String    @id @default(uuid())
+  token         String    @unique
+  remarks       String?
+  isActive      Boolean   @default(true)
+  expireDate    DateTime
+  tokenUsedDate DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@map("pass_tokens")
+}
