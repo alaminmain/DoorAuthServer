@@ -85,7 +85,38 @@ new OIDCStrategy({
 
 ---
 
-## 4. Authorization & Menus (The Custom Part)
+## 4. Mobile Integration (iOS & Android)
+
+Mobile apps cannot safely store a `Client Secret`. Therefore, they must use **Authorization Code Flow with PKCE** (Proof Key for Code Exchange).
+
+### 4.1 Configuration Differences
+*   **Client Secret:** None (Do not use).
+*   **Redirect URI:** Uses a Deep Link Scheme (e.g., `com.company.payroll://callback`).
+*   **Browser:** MUST use System Browser (Chrome Custom Tabs / ASWebAuthenticationSession), not an embedded WebView.
+
+### 4.2 The Flow (PKCE)
+1.  **App Generates Code:** App creates a random `code_verifier` and hashes it to create a `code_challenge`.
+2.  **Login URL:**
+    `GET /authorize?client_id=...&redirect_uri=...&response_type=code&code_challenge=XYZ&code_challenge_method=S256`
+3.  **Exchange:**
+    App sends `code` + `code_verifier` (instead of client secret) to `/token`.
+
+### 4.3 Flutter Example (using `flutter_appauth`)
+```dart
+final AuthorizationTokenResponse? result = await appAuth.authorizeAndExchangeCode(
+  AuthorizationTokenRequest(
+    '<CLIENT_ID>',
+    'com.company.payroll://callback', // Deep Link
+    discoveryUrl: 'https://auth-system.com/.well-known/openid-configuration',
+    scopes: ['openid', 'profile', 'payroll:read'],
+  ),
+);
+// Use result.accessToken to call APIs
+```
+
+---
+
+## 5. Authorization & Menus (The Custom Part)
 
 Once the Client App has the **Access Token**, it knows *who* the user is. Now it needs to know *what* to show.
 
