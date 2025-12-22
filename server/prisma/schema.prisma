@@ -18,7 +18,7 @@ model Tenant {
   id             String        @id @default(uuid())
   name           String
   domain         String        @unique
-  brandingConfig Json?
+  brandingConfig String?
   createdAt      DateTime      @default(now()) @map("created_at")
 
   users        User[]
@@ -154,7 +154,7 @@ model AuditLog {
   resource  String
   ipAddress String?
   userAgent String?
-  details   Json?
+  details   String?
   createdAt DateTime @default(now()) @map("created_at")
 
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
