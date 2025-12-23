@@ -96,9 +96,9 @@
 
 **Phase 5: Frontend (Admin Panel)**
 
-- [ ] **Setup:** Install Material UI.
-- [ ] **Auth:** Connect Login page to Backend.
-- [ ] **Dash:** Build "Tenant Manager" and "App Manager" views.
+- [x] **Setup:** Install TailwindCSS (Modern UI Stack).
+- [x] **Auth:** Connect Login page to Backend.
+- [x] **Dash:** Build "Tenant Manager" and "App Manager" views.
 
 ---
 
