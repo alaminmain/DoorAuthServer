@@ -8,6 +8,7 @@ import oauthRoutes from './oauth.routes';
 import applicationRoutes from './application.routes';
 import roleRoutes from './role.routes';
 import menuRoutes from './menu.routes';
+import userRoutes from './user.routes';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/oauth', oauthRoutes);
 router.use('/applications', applicationRoutes);
 router.use('/roles', roleRoutes);
 router.use('/menus', menuRoutes);
+router.use('/users', userRoutes);
 
 export default router;
