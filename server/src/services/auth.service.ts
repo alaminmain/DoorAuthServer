@@ -53,16 +53,13 @@ export class AuthService {
   }
 
   async login(credentials: any) {
-    const { email, password, tenantId, twoFactorToken } = credentials;
+    const { email, password, twoFactorToken } = credentials;
     Logger.info('User login attempt', email);
 
-    // 1. Find User
-    const user = await prisma.user.findUnique({
+    // 1. Find User by email (auto-select tenant)
+    const user = await prisma.user.findFirst({
       where: {
-        tenantId_email: {
-          tenantId,
-          email,
-        },
+        email,
       },
     });
 
