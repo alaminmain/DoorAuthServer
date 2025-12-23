@@ -1,23 +1,29 @@
 import { AuthService } from '../../src/services/auth.service';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-// Mock Prisma
-jest.mock('@prisma/client');
+// Mock the modules
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
 
+// Mock PrismaClient
+const mockPrismaUser = {
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+};
+
+jest.mock('@prisma/client', () => ({
+    PrismaClient: jest.fn().mockImplementation(() => ({
+        user: mockPrismaUser,
+    })),
+}));
+
 describe('AuthService - Unit Tests', () => {
     let authService: AuthService;
-    let mockPrisma: jest.Mocked<PrismaClient>;
 
     beforeEach(() => {
         authService = new AuthService();
-        mockPrisma = new PrismaClient() as jest.Mocked<PrismaClient>;
-    });
-
-    afterEach(() => {
         jest.clearAllMocks();
     });
 
@@ -39,9 +45,9 @@ describe('AuthService - Unit Tests', () => {
                 tenantId: 'tenant-123',
             };
 
-            (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+            mockPrismaUser.findUnique.mockResolvedValue(null);
             (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
-            (mockPrisma.user.create as jest.Mock).mockResolvedValue(mockUser);
+            mockPrismaUser.create.mockResolvedValue(mockUser);
             (jwt.sign as jest.Mock).mockReturnValue('mock-jwt-token');
 
             // Act
@@ -50,9 +56,9 @@ describe('AuthService - Unit Tests', () => {
             // Assert
             expect(result).toHaveProperty('user');
             expect(result).toHaveProperty('token');
-            expect(mockPrisma.user.findUnique).toHaveBeenCalled();
+            expect(mockPrismaUser.findUnique).toHaveBeenCalled();
             expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10);
-            expect(mockPrisma.user.create).toHaveBeenCalled();
+            expect(mockPrismaUser.create).toHaveBeenCalled();
         });
 
         it('should throw error if user already exists', async () => {
@@ -62,13 +68,14 @@ describe('AuthService - Unit Tests', () => {
                 email: 'test@example.com',
             };
 
-            (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
+            mockPrismaUser.findUnique.mockResolvedValue(existingUser);
 
             // Act & Assert
             await expect(
                 authService.register({
                     email: 'test@example.com',
                     password: 'password123',
+                    userName: 'Test User',
                     tenantId: 'tenant-123',
                 })
             ).rejects.toThrow('User already exists');
@@ -87,11 +94,12 @@ describe('AuthService - Unit Tests', () => {
                 isApproved: true,
                 isTwoFactorEnabled: false,
                 passAttemptCount: 0,
+                roles: [],
             };
 
-            (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+            mockPrismaUser.findUnique.mockResolvedValue(mockUser);
             (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-            (mockPrisma.user.update as jest.Mock).mockResolvedValue(mockUser);
+            mockPrismaUser.update.mockResolvedValue(mockUser);
             (jwt.sign as jest.Mock).mockReturnValue('mock-jwt-token');
 
             // Act
@@ -109,7 +117,7 @@ describe('AuthService - Unit Tests', () => {
 
         it('should throw error with invalid credentials', async () => {
             // Arrange
-            (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+            mockPrismaUser.findUnique.mockResolvedValue(null);
 
             // Act & Assert
             await expect(
@@ -130,7 +138,7 @@ describe('AuthService - Unit Tests', () => {
                 isApproved: true,
             };
 
-            (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(lockedUser);
+            mockPrismaUser.findUnique.mockResolvedValue(lockedUser);
 
             // Act & Assert
             await expect(
