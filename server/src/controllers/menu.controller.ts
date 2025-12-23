@@ -29,7 +29,7 @@ export class MenuController {
                     },
                 },
                 orderBy: [
-                    { orderIndex: 'asc' },
+                    { order: 'asc' },
                     { label: 'asc' },
                 ],
             });
@@ -75,7 +75,7 @@ export class MenuController {
      */
     async createMenu(req: Request, res: Response) {
         try {
-            const { label, path, icon, orderIndex, parentId, applicationId, requiredPermission } = req.body;
+            const { label, path, icon, order, parentId, applicationId, requiredPermission } = req.body;
 
             if (!label || !applicationId) {
                 res.status(400).json(ApiResponse.error('Label and applicationId are required'));
@@ -109,7 +109,7 @@ export class MenuController {
                     label,
                     path,
                     icon,
-                    orderIndex: orderIndex || 0,
+                    order: order || 0,
                     parentId,
                     applicationId,
                     requiredPermission,
@@ -130,7 +130,7 @@ export class MenuController {
     async updateMenu(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const { label, path, icon, orderIndex, parentId, requiredPermission } = req.body;
+            const { label, path, icon, order, parentId, requiredPermission } = req.body;
 
             const menu = await prisma.menu.findUnique({
                 where: { id },
@@ -153,7 +153,7 @@ export class MenuController {
                     ...(label && { label }),
                     ...(path !== undefined && { path }),
                     ...(icon !== undefined && { icon }),
-                    ...(orderIndex !== undefined && { orderIndex }),
+                    ...(order !== undefined && { order }),
                     ...(parentId !== undefined && { parentId }),
                     ...(requiredPermission !== undefined && { requiredPermission }),
                 },
@@ -246,7 +246,7 @@ export class MenuController {
             const allMenus = await prisma.menu.findMany({
                 where: { applicationId: applicationId as string },
                 orderBy: [
-                    { orderIndex: 'asc' },
+                    { order: 'asc' },
                     { label: 'asc' },
                 ],
             });

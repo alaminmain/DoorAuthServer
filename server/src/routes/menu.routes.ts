@@ -93,7 +93,7 @@ router.get('/:id', authMiddleware, menuController.getMenuById.bind(menuControlle
  *               icon:
  *                 type: string
  *                 example: dashboard
- *               orderIndex:
+ *               order:
  *                 type: integer
  *                 example: 0
  *               parentId:
@@ -137,7 +137,7 @@ router.post('/', authMiddleware, menuController.createMenu.bind(menuController))
  *                 type: string
  *               icon:
  *                 type: string
- *               orderIndex:
+ *               order:
  *                 type: integer
  *               parentId:
  *                 type: string
