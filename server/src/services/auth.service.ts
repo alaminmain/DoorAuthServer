@@ -6,6 +6,7 @@ import { Logger } from '../utils/Logger';
 const prisma = new PrismaClient();
 const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+const MAX_LOGIN_ATTEMPTS = parseInt(process.env.MAX_LOGIN_ATTEMPTS || '5');
 
 export class AuthService {
   async register(data: any) {
@@ -69,13 +70,49 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    // 2. Verify Password
-    const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) {
-      throw new Error('Invalid credentials');
+    // 2. Check if account is locked
+    if (user.isLocked) {
+      Logger.warn('Login attempt on locked account', { userId: user.id, email });
+      throw new Error('Account is locked due to too many failed login attempts. Please reset your password or contact support.');
     }
 
-    // 3. Check if 2FA is enabled
+    // 3. Check if account is approved
+    if (!user.isApproved) {
+      Logger.warn('Login attempt on unapproved account', { userId: user.id, email });
+      throw new Error('Account is not approved. Please contact your administrator.');
+    }
+
+    // 4. Verify Password
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isValid) {
+      // Increment failed login attempts
+      const newAttemptCount = user.passAttemptCount + 1;
+      const shouldLock = newAttemptCount >= MAX_LOGIN_ATTEMPTS;
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          passAttemptCount: newAttemptCount,
+          isLocked: shouldLock,
+        },
+      });
+
+      Logger.warn('Failed login attempt', {
+        userId: user.id,
+        email,
+        attemptCount: newAttemptCount,
+        locked: shouldLock,
+      });
+
+      if (shouldLock) {
+        throw new Error(`Account locked due to ${MAX_LOGIN_ATTEMPTS} failed login attempts. Please reset your password.`);
+      }
+
+      const remainingAttempts = MAX_LOGIN_ATTEMPTS - newAttemptCount;
+      throw new Error(`Invalid credentials. ${remainingAttempts} attempt(s) remaining before account lock.`);
+    }
+
+    // 5. Check if 2FA is enabled
     if (user.isTwoFactorEnabled) {
       if (!twoFactorToken) {
         // Return a special response indicating 2FA is required
@@ -91,14 +128,41 @@ export class AuthService {
       const is2FAValid = await twoFactorService.verifyToken(user.id, twoFactorToken);
 
       if (!is2FAValid) {
+        // Increment failed attempts for invalid 2FA
+        const newAttemptCount = user.passAttemptCount + 1;
+        const shouldLock = newAttemptCount >= MAX_LOGIN_ATTEMPTS;
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            passAttemptCount: newAttemptCount,
+            isLocked: shouldLock,
+          },
+        });
+
+        if (shouldLock) {
+          throw new Error(`Account locked due to ${MAX_LOGIN_ATTEMPTS} failed attempts. Please reset your password.`);
+        }
+
         throw new Error('Invalid 2FA token');
       }
     }
 
-    // 4. Generate Token
+    // 6. Successful login - Reset failed attempts and update last login
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passAttemptCount: 0,
+        lastLoginTime: new Date(),
+      },
+    });
+
+    // 7. Generate Token
     const token = this.generateToken(user);
 
     const { passwordHash: _, ...userWithoutPassword } = user;
+
+    Logger.info('Successful login', { userId: user.id, email });
 
     return { user: userWithoutPassword, token };
   }
