@@ -6,16 +6,19 @@ import jwt from 'jsonwebtoken';
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
 
-// Mock PrismaClient
-const mockPrismaUser = {
-    findUnique: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-};
+// Create mock functions first
+const mockFindUnique = jest.fn();
+const mockCreate = jest.fn();
+const mockUpdate = jest.fn();
 
+// Mock PrismaClient with inline functions
 jest.mock('@prisma/client', () => ({
     PrismaClient: jest.fn().mockImplementation(() => ({
-        user: mockPrismaUser,
+        user: {
+            findUnique: mockFindUnique,
+            create: mockCreate,
+            update: mockUpdate,
+        },
     })),
 }));
 
@@ -45,9 +48,9 @@ describe('AuthService - Unit Tests', () => {
                 tenantId: 'tenant-123',
             };
 
-            mockPrismaUser.findUnique.mockResolvedValue(null);
+            mockFindUnique.mockResolvedValue(null);
             (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
-            mockPrismaUser.create.mockResolvedValue(mockUser);
+            mockCreate.mockResolvedValue(mockUser);
             (jwt.sign as jest.Mock).mockReturnValue('mock-jwt-token');
 
             // Act
@@ -56,9 +59,9 @@ describe('AuthService - Unit Tests', () => {
             // Assert
             expect(result).toHaveProperty('user');
             expect(result).toHaveProperty('token');
-            expect(mockPrismaUser.findUnique).toHaveBeenCalled();
+            expect(mockFindUnique).toHaveBeenCalled();
             expect(bcrypt.hash).toHaveBeenCalledWith('password123', 10);
-            expect(mockPrismaUser.create).toHaveBeenCalled();
+            expect(mockCreate).toHaveBeenCalled();
         });
 
         it('should throw error if user already exists', async () => {
@@ -68,7 +71,7 @@ describe('AuthService - Unit Tests', () => {
                 email: 'test@example.com',
             };
 
-            mockPrismaUser.findUnique.mockResolvedValue(existingUser);
+            mockFindUnique.mockResolvedValue(existingUser);
 
             // Act & Assert
             await expect(
@@ -97,9 +100,9 @@ describe('AuthService - Unit Tests', () => {
                 roles: [],
             };
 
-            mockPrismaUser.findUnique.mockResolvedValue(mockUser);
+            mockFindUnique.mockResolvedValue(mockUser);
             (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-            mockPrismaUser.update.mockResolvedValue(mockUser);
+            mockUpdate.mockResolvedValue(mockUser);
             (jwt.sign as jest.Mock).mockReturnValue('mock-jwt-token');
 
             // Act
@@ -117,7 +120,7 @@ describe('AuthService - Unit Tests', () => {
 
         it('should throw error with invalid credentials', async () => {
             // Arrange
-            mockPrismaUser.findUnique.mockResolvedValue(null);
+            mockFindUnique.mockResolvedValue(null);
 
             // Act & Assert
             await expect(
@@ -138,7 +141,7 @@ describe('AuthService - Unit Tests', () => {
                 isApproved: true,
             };
 
-            mockPrismaUser.findUnique.mockResolvedValue(lockedUser);
+            mockFindUnique.mockResolvedValue(lockedUser);
 
             // Act & Assert
             await expect(

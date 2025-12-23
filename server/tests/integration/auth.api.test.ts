@@ -141,6 +141,7 @@ describe('Auth API - Integration Tests', () => {
             const testUser = await prisma.user.create({
                 data: {
                     email: 'locktest@example.com',
+                    loginId: 'locktest',
                     passwordHash: await require('bcrypt').hash('CorrectPassword', 10),
                     userName: 'Lock Test User',
                     tenantId: testTenantId,
