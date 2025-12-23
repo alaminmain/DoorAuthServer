@@ -6,6 +6,8 @@ import passwordRecoveryRoutes from './passwordRecovery.routes';
 import accountSecurityRoutes from './accountSecurity.routes';
 import oauthRoutes from './oauth.routes';
 import applicationRoutes from './application.routes';
+import roleRoutes from './role.routes';
+import menuRoutes from './menu.routes';
 
 const router = Router();
 
@@ -16,5 +18,7 @@ router.use('/password', passwordRecoveryRoutes);
 router.use('/account', accountSecurityRoutes);
 router.use('/oauth', oauthRoutes);
 router.use('/applications', applicationRoutes);
+router.use('/roles', roleRoutes);
+router.use('/menus', menuRoutes);
 
 export default router;

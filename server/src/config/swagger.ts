@@ -96,6 +96,14 @@ const options: swaggerJsdoc.Options = {
                 name: 'Applications',
                 description: 'Application management endpoints',
             },
+            {
+                name: 'Roles',
+                description: 'Role and permission management endpoints',
+            },
+            {
+                name: 'Menus',
+                description: 'Menu management and Smart Menu endpoints',
+            },
         ],
     },
     apis: ['./src/routes/*.ts'], // Path to the API routes
