@@ -73,9 +73,9 @@
 
 **Phase 2: Auth Engine**
 
-- [ ] **Register/Login:** Implement API for User Creation and Session Login (JWT). **(In Progress)**
-- [ ] **2FA:** Implement `generate-2fa-secret` and `verify-2fa-token`.
-- [ ] **Middleware:** Create `authMiddleware` to protect routes. **(In Progress)**
+- [x] **Register/Login:** Implement API for User Creation and Session Login (JWT). **(Completed)**
+- [x] **2FA:** Implement `generate-2fa-secret` and `verify-2fa-token`. **(Completed)**
+- [x] **Middleware:** Create `authMiddleware` to protect routes. **(Completed)**
 - [ ] **Password Recovery:** Implement "Forgot Password" (generate `PassToken`) and "Reset Password" (validate token & update hash) endpoints.
 - [ ] **Account Security:** Implement Brute Force protection (Lock account after N failed attempts).
 - [ ] **Social Auth:** Implement Passport strategies for Google/GitHub.
