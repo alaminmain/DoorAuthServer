@@ -138,40 +138,41 @@ client/
 ## Implementation Phases
 
 ### Phase 5.1: Setup & Authentication (Day 1)
-1. Initialize Vite project
-2. Setup TailwindCSS
-3. Install dependencies
-4. Create API service layer
-5. Implement login page
-6. Setup routing
-7. Create protected routes
+1. [x] Initialize Vite project
+2. [x] Setup TailwindCSS
+3. [x] Install dependencies
+4. [x] Create API service layer
+5. [x] Implement login page
+6. [x] Setup routing
+7. [x] Create protected routes
 
 ### Phase 5.2: Layout & Dashboard (Day 1-2)
-1. Create sidebar navigation
-2. Create header with user menu
-3. Build dashboard layout
-4. Add statistics cards
-5. Implement logout
+1. [x] Create sidebar navigation
+2. [x] Create header with user menu
+3. [x] Build dashboard layout
+4. [x] Add statistics cards
+5. [x] Implement logout
 
 ### Phase 5.3: Tenant Management (Day 2)
-1. Tenant list page
-2. Create tenant form
-3. Edit tenant functionality
-4. Delete with confirmation
-5. Search and filter
+1. [x] Tenant list page
+2. [x] Create tenant form
+3. [x] Edit tenant functionality
+4. [x] Delete with confirmation
+5. [x] Search and filter
 
 ### Phase 5.4: Application Management (Day 2-3)
-1. Application list page
-2. Create application form
-3. Edit application
-4. Secret regeneration
-5. Copy credentials feature
+1. [x] Application list page
+2. [x] Create application form
+3. [x] Edit application
+4. [x] Secret regeneration
+5. [x] Copy credentials feature
 
 ### Phase 5.5: Role & Menu Management (Day 3)
-1. Role management UI
-2. Permission assignment
-3. Menu builder interface
-4. Tree view for menus
+1. [x] Role management UI
+2. [x] Permission assignment
+3. [x] Menu list and hierarchy
+4. [x] Menu form with parent selection
+5. [x] Role-based menu visibility config
 
 ## Design Guidelines
 
