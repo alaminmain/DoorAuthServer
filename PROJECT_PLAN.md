@@ -90,7 +90,7 @@
 
 **Phase 4: Management APIs**
 
-- [ ] **CRUD:** APIs for Tenants, Applications, and Roles.
+- [x] **CRUD:** APIs for Tenants (Completed) and Applications (Completed). Roles (In Progress).
 - [ ] **Menu Builder:** API to Create/Update menu nodes (handling hierarchy).
 - [ ] **Menu Retrieval:** The "Smart Menu" endpoint for end-users.
 

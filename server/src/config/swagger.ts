@@ -92,6 +92,10 @@ const options: swaggerJsdoc.Options = {
                 name: 'OAuth/OIDC',
                 description: 'OAuth 2.0 and OpenID Connect endpoints for SSO',
             },
+            {
+                name: 'Applications',
+                description: 'Application management endpoints',
+            },
         ],
     },
     apis: ['./src/routes/*.ts'], // Path to the API routes
