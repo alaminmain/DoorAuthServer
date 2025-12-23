@@ -178,3 +178,38 @@ model PassToken {
 
   @@map("pass_tokens")
 }
+
+// -------------------
+// OAuth/OIDC Models
+// -------------------
+
+model AuthorizationCode {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  clientId      String
+  userId        String
+  redirectUri   String
+  scope         String?
+  codeChallenge String?
+  codeChallengeMethod String?
+  expiresAt     DateTime
+  used          Boolean   @default(false)
+  usedAt        DateTime?
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@map("authorization_codes")
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid())
+  token       String    @unique
+  userId      String
+  clientId    String
+  scope       String?
+  expiresAt   DateTime
+  revoked     Boolean   @default(false)
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("refresh_tokens")
+}

@@ -88,6 +88,10 @@ const options: swaggerJsdoc.Options = {
                 name: 'Tenants',
                 description: 'Tenant management endpoints',
             },
+            {
+                name: 'OAuth/OIDC',
+                description: 'OAuth 2.0 and OpenID Connect endpoints for SSO',
+            },
         ],
     },
     apis: ['./src/routes/*.ts'], // Path to the API routes

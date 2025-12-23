@@ -82,10 +82,10 @@
 
 **Phase 3: The SSO Protocol**
 
-- [ ] **OIDC:** Implement `/oauth/authorize` (GET) logic (Support `response_type=code` and PKCE `code_challenge`).
-- [ ] **OIDC:** Implement `/oauth/token` (POST) logic (Support `authorization_code` and `refresh_token` grants).
-- [ ] **OIDC:** Implement `/userinfo` endpoint (Standard OIDC identity fetch).
-- [ ] **Logout:** Implement `/logout` endpoint (Session destruction & Redirect).
+- [x] **OIDC:** Implement `/oauth/authorize` (GET) logic (Support `response_type=code` and PKCE `code_challenge`). **(Completed)**
+- [x] **OIDC:** Implement `/oauth/token` (POST) logic (Support `authorization_code` and `refresh_token` grants). **(Completed)**
+- [x] **OIDC:** Implement `/userinfo` endpoint (Standard OIDC identity fetch). **(Completed)**
+- [x] **Logout:** Implement `/logout` endpoint (Session destruction & Redirect). **(Completed - via /oauth/revoke)**
 - [ ] **Demo:** Verify the flow with Postman or a simple script.
 
 **Phase 4: Management APIs**
