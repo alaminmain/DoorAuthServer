@@ -167,7 +167,7 @@ describe('Auth API - Integration Tests', () => {
                     password: 'WrongPassword',
                     tenantId: testTenantId,
                 })
-                .expect(403);
+                .expect(401);
 
             expect(response.body.message).toContain('locked');
 
