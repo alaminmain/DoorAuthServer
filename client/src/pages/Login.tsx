@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, Mail, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/ui/Button';
@@ -19,6 +19,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginForm() {
     const { login } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [error, setError] = useState<string | null>(null);
 
     const {
@@ -33,7 +34,19 @@ export default function LoginForm() {
         try {
             setError(null);
             await login(data);
-            navigate('/');
+
+            // Set SSO cookie
+            const token = localStorage.getItem('token');
+            if (token) {
+                document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+            }
+
+            const returnUrl = searchParams.get('returnUrl');
+            if (returnUrl) {
+                window.location.href = returnUrl;
+            } else {
+                navigate('/');
+            }
         } catch (err: any) {
             setError(err.message || 'Failed to login. Please check your credentials.');
         }

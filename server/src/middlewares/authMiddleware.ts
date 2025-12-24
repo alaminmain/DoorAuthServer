@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { ApiResponse } from '../utils/ApiResponse';
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers.authorization?.split(' ')[1];
+  const token = req.headers.authorization?.split(' ')[1] || req.cookies?.access_token;
 
   if (!token) {
     res.status(401).json(ApiResponse.error('Unauthorized: No token provided'));

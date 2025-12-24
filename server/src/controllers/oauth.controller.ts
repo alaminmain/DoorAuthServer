@@ -38,8 +38,11 @@ export class OAuthController {
             // Check if user is authenticated
             const user = (req as any).user;
             if (!user) {
-                // In a real implementation, redirect to login page
-                res.status(401).json(ApiResponse.error('User not authenticated. Please login first.'));
+                // Redirect to login page
+                const loginUrl = new URL('http://localhost:5173/login');
+                const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+                loginUrl.searchParams.append('returnUrl', fullUrl);
+                res.redirect(loginUrl.toString());
                 return;
             }
 

@@ -15,11 +15,11 @@ datasource db {
 // -------------------
 
 model Tenant {
-  id             String        @id @default(uuid())
+  id             String   @id @default(uuid())
   name           String
-  domain         String        @unique
+  domain         String   @unique
   brandingConfig String?
-  createdAt      DateTime      @default(now()) @map("created_at")
+  createdAt      DateTime @default(now()) @map("created_at")
 
   users        User[]
   applications Application[]
@@ -49,7 +49,7 @@ model User {
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId   String
   roles      UserRole[]
   auditLogs  AuditLog[]
@@ -79,6 +79,7 @@ model Application {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId String
   menus    Menu[]
+  roles    Role[]
 
   @@map("applications")
 }
@@ -88,20 +89,20 @@ model Application {
 // -------------------
 
 model Role {
-  id          String       @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
   description String?
-  isSystem    Boolean      @default(false)
-  status      String       @default("active")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
+  isSystem    Boolean  @default(false)
+  status      String   @default("active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId    String
-  application Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  tenant        Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId      String
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   applicationId String?
-  users       UserRole[]
-  permissions Permission[]
+  users         UserRole[]
+  permissions   Permission[]
 
   @@unique([tenantId, name])
   @@map("roles")
@@ -186,32 +187,32 @@ model PassToken {
 // -------------------
 
 model AuthorizationCode {
-  id            String    @id @default(uuid())
-  code          String    @unique
-  clientId      String
-  userId        String
-  redirectUri   String
-  scope         String?
-  codeChallenge String?
+  id                  String    @id @default(uuid())
+  code                String    @unique
+  clientId            String
+  userId              String
+  redirectUri         String
+  scope               String?
+  codeChallenge       String?
   codeChallengeMethod String?
-  expiresAt     DateTime
-  used          Boolean   @default(false)
-  usedAt        DateTime?
-  createdAt     DateTime  @default(now()) @map("created_at")
+  expiresAt           DateTime
+  used                Boolean   @default(false)
+  usedAt              DateTime?
+  createdAt           DateTime  @default(now()) @map("created_at")
 
   @@map("authorization_codes")
 }
 
 model RefreshToken {
-  id          String    @id @default(uuid())
-  token       String    @unique
-  userId      String
-  clientId    String
-  scope       String?
-  expiresAt   DateTime
-  revoked     Boolean   @default(false)
-  revokedAt   DateTime?
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String
+  clientId  String
+  scope     String?
+  expiresAt DateTime
+  revoked   Boolean   @default(false)
+  revokedAt DateTime?
+  createdAt DateTime  @default(now()) @map("created_at")
 
   @@map("refresh_tokens")
 }
