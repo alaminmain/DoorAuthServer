@@ -97,7 +97,7 @@ export default function MenuForm({ menu, onSubmit, onCancel, isLoading }: MenuFo
                 <label className="block text-sm font-medium text-foreground mb-2">Application</label>
                 <select
                     {...register('applicationId')}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
                     disabled={!!menu || loadingConfig}
                 >
                     <option value="">{loadingConfig ? 'Loading...' : 'Select an Application'}</option>
@@ -133,7 +133,7 @@ export default function MenuForm({ menu, onSubmit, onCancel, isLoading }: MenuFo
                     <label className="block text-sm font-medium text-foreground mb-2">Parent Menu</label>
                     <select
                         {...register('parentId')}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
                     >
                         <option value="">None (Top Level)</option>
                         {possibleParents.map(p => (

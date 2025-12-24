@@ -1,4 +1,4 @@
-import { Edit, Trash2, Mail, Building, User as UserIcon } from 'lucide-react';
+import { Edit, Trash2, Mail, Building, User as UserIcon, Eye } from 'lucide-react';
 import type { User } from '../../types';
 import Button from '../ui/Button';
 
@@ -6,10 +6,11 @@ interface UserListProps {
     users: User[];
     onEdit: (user: User) => void;
     onDelete: (id: string) => void;
+    onViewDetails: (user: User) => void;
     isLoading?: boolean;
 }
 
-export default function UserList({ users, onEdit, onDelete, isLoading }: UserListProps) {
+export default function UserList({ users, onEdit, onDelete, onViewDetails, isLoading }: UserListProps) {
     if (isLoading) {
         return (
             <div className="space-y-4">
@@ -39,7 +40,16 @@ export default function UserList({ users, onEdit, onDelete, isLoading }: UserLis
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-primary-500"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                            onClick={() => onViewDetails(user)}
+                            title="View Details"
+                        >
+                            <Eye size={16} />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
                             onClick={() => onEdit(user)}
                             title="Edit User"
                         >

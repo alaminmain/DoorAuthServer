@@ -9,6 +9,7 @@ import applicationRoutes from './application.routes';
 import roleRoutes from './role.routes';
 import menuRoutes from './menu.routes';
 import userRoutes from './user.routes';
+import permissionRoutes from './permission.routes';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/applications', applicationRoutes);
 router.use('/roles', roleRoutes);
 router.use('/menus', menuRoutes);
 router.use('/users', userRoutes);
+router.use('/permissions', permissionRoutes);
 
 export default router;

@@ -175,10 +175,21 @@ export class TenantController {
                 return;
             }
 
+            Logger.info('Attempting to delete tenant', {
+                tenantId: id,
+                usersCount: tenant._count.users,
+                appsCount: tenant._count.applications
+            });
+
             // Prevent deletion if tenant has users or applications
             if (tenant._count.users > 0 || tenant._count.applications > 0) {
+                Logger.warn('Cannot delete tenant with existing relations', {
+                    tenantId: id,
+                    usersCount: tenant._count.users,
+                    appsCount: tenant._count.applications
+                });
                 res.status(400).json(
-                    ApiResponse.error('Cannot delete tenant with existing users or applications')
+                    ApiResponse.error(`Cannot delete tenant. It has ${tenant._count.users} users and ${tenant._count.applications} applications.`)
                 );
                 return;
             }
@@ -191,6 +202,7 @@ export class TenantController {
 
             res.status(200).json(ApiResponse.success({}, 'Tenant deleted successfully'));
         } catch (error: any) {
+            Logger.error('Error deleting tenant', error);
             res.status(500).json(ApiResponse.error(error.message));
         }
     }

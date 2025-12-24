@@ -49,7 +49,7 @@ const MenuNode = ({ node, level, onEdit, onDelete }: { node: TreeNode; level: nu
             <div
                 className={cn(
                     "flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-accent/5 transition-colors",
-                    level > 0 && "ml-6 border-l-4 border-l-primary-500/20"
+                    level > 0 && "ml-6 border-l-4 border-l-primary/20"
                 )}
             >
                 <div className="flex items-center gap-3">

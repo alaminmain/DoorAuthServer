@@ -98,6 +98,8 @@ model Role {
 
   tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId    String
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String?
   users       UserRole[]
   permissions Permission[]
 

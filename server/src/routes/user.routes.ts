@@ -108,4 +108,170 @@ router.put('/:id', authMiddleware, userController.update.bind(userController));
  */
 router.delete('/:id', authMiddleware, userController.delete.bind(userController));
 
+
+/**
+ * @swagger
+ * /api/users/{id}/reset-password:
+ *   post:
+ *     summary: Reset user password (admin)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ */
+router.post('/:id/reset-password', authMiddleware, userController.resetPassword.bind(userController));
+
+/**
+ * @swagger
+ * /api/users/{id}/send-reset-link:
+ *   post:
+ *     summary: Send password reset link to user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Reset link sent successfully
+ */
+router.post('/:id/send-reset-link', authMiddleware, userController.sendResetLink.bind(userController));
+
+/**
+ * @swagger
+ * /api/users/{id}/lock-status:
+ *   put:
+ *     summary: Change user lock status
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isLocked:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Lock status updated
+ */
+router.put('/:id/lock-status', authMiddleware, userController.changeLockStatus.bind(userController));
+
+/**
+ * @swagger
+ * /api/users/{id}/activity-logs:
+ *   get:
+ *     summary: Get user latest activity logs
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: List of activity logs
+ */
+router.get('/:id/activity-logs', authMiddleware, userController.getActivityLogs.bind(userController));
+
+/**
+ * @swagger
+ * /api/users/{id}/roles:
+ *   get:
+ *     summary: Get user roles
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: List of user roles
+ */
+router.get('/:id/roles', authMiddleware, userController.getUserRoles.bind(userController));
+
+/**
+ * @swagger
+ * /api/users/{id}/roles:
+ *   post:
+ *     summary: Assign role to user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               roleId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Role assigned successfully
+ */
+router.post('/:id/roles', authMiddleware, userController.assignRole.bind(userController));
+
+/**
+ * @swagger
+ * /api/users/{id}/roles/{roleId}:
+ *   delete:
+ *     summary: Remove role from user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *       - in: path
+ *         name: roleId
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Role removed successfully
+ */
+router.delete('/:id/roles/:roleId', authMiddleware, userController.removeRole.bind(userController));
+
 export default router;

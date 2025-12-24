@@ -40,7 +40,7 @@ export default function TenantList({ tenants, onEdit, onDelete, isLoading }: Ten
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-primary-500"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
                             onClick={() => onEdit(tenant)}
                             title="Edit Tenant"
                         >
@@ -58,7 +58,7 @@ export default function TenantList({ tenants, onEdit, onDelete, isLoading }: Ten
                     </div>
 
                     <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400">
+                        <div className="p-3 rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary">
                             <Globe size={24} />
                         </div>
                     </div>

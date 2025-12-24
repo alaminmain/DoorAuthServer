@@ -57,7 +57,7 @@ export default function ApplicationList({ applications, onEdit, onDelete, onRege
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-primary-500"
+                                className="h-8 w-8 text-muted-foreground hover:text-primary"
                                 onClick={() => onEdit(app)}
                                 title="Edit Application"
                             >
@@ -80,7 +80,7 @@ export default function ApplicationList({ applications, onEdit, onDelete, onRege
                             <p className="text-muted-foreground text-xs mb-1">Client ID</p>
                             <div className="flex items-center gap-2 bg-secondary/50 p-2 rounded font-mono text-xs">
                                 <span className="truncate flex-1">{app.clientId}</span>
-                                <button onClick={() => copyToClipboard(app.clientId)} className="text-muted-foreground hover:text-primary-500">
+                                <button onClick={() => copyToClipboard(app.clientId)} className="text-muted-foreground hover:text-primary">
                                     <Copy size={12} />
                                 </button>
                             </div>

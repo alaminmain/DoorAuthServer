@@ -2,14 +2,16 @@ import { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { Role, CreateRoleDto, Tenant, Permission } from '../../types';
+import type { Role, CreateRoleDto, Tenant, Permission, Application } from '../../types';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { tenantService } from '../../services/tenant.service';
 import { roleService } from '../../services/role.service';
+import { applicationService } from '../../services/application.service';
 
 const roleSchema = z.object({
     tenantId: z.string().min(1, 'Tenant is required'),
+    applicationId: z.string().optional(),
     name: z.string().min(2, 'Name must be at least 2 characters'),
     description: z.string().optional(),
     permissionIds: z.array(z.string()).optional(),
@@ -26,6 +28,7 @@ interface RoleFormProps {
 
 export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFormProps) {
     const [tenants, setTenants] = useState<Tenant[]>([]);
+    const [applications, setApplications] = useState<Application[]>([]);
     const [permissions, setPermissions] = useState<Permission[]>([]);
     const [loadingConfig, setLoadingConfig] = useState(true);
 
@@ -40,6 +43,7 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
         resolver: zodResolver(roleSchema),
         defaultValues: {
             tenantId: '',
+            applicationId: '',
             name: '',
             description: '',
             permissionIds: [],
@@ -47,6 +51,7 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
     });
 
     const selectedPermissionIds = watch('permissionIds') || [];
+    const selectedTenantId = watch('tenantId');
 
     useEffect(() => {
         const loadConfig = async () => {
@@ -67,12 +72,21 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
     }, []);
 
     useEffect(() => {
+        if (selectedTenantId) {
+            applicationService.getAll(selectedTenantId).then(setApplications).catch(console.error);
+        } else {
+            setApplications([]);
+        }
+    }, [selectedTenantId]);
+
+    useEffect(() => {
         if (role) {
             reset({
                 tenantId: role.tenantId,
+                applicationId: role.applicationId || '',
                 name: role.name,
                 description: role.description || '',
-                permissionIds: role.permissions?.map(p => p.id) || [],
+                permissionIds: role.permissions?.map(p => `${p.resource}:${p.action}`) || [],
             });
         }
     }, [role, reset]);
@@ -116,7 +130,7 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
                     <label className="block text-sm font-medium text-foreground mb-2">Tenant</label>
                     <select
                         {...register('tenantId')}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
                         disabled={!!role}
                     >
                         <option value="">Select a Tenant</option>
@@ -125,6 +139,19 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
                         ))}
                     </select>
                     {errors.tenantId && <p className="mt-1 text-sm text-red-500">{errors.tenantId.message}</p>}
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Application (Optional)</label>
+                    <select
+                        {...register('applicationId')}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
+                    >
+                        <option value="">All Applications</option>
+                        {applications.map(app => (
+                            <option key={app.id} value={app.id}>{app.name}</option>
+                        ))}
+                    </select>
                 </div>
 
                 <Input
@@ -150,7 +177,7 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
                 ) : (
                     <div className="grid gap-6 sm:grid-cols-2">
                         {Object.entries(permissionsByResource).map(([resource, group]) => {
-                            const groupIds = group.map(p => p.id);
+                            const groupIds = group.map(p => `${p.resource}:${p.action}`);
                             const allSelected = groupIds.every(id => selectedPermissionIds.includes(id));
 
                             return (
@@ -160,25 +187,29 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
                                         <button
                                             type="button"
                                             onClick={() => toggleResource(resource)}
-                                            className="text-xs text-primary-500 hover:text-primary-600 font-medium"
+                                            className="text-xs text-primary hover:text-primary/80 font-medium"
                                         >
                                             {allSelected ? 'Unselect All' : 'Select All'}
                                         </button>
                                     </div>
                                     <div className="space-y-2">
-                                        {group.map(p => (
-                                            <label key={p.id} className="flex items-start space-x-2 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    className="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                                                    checked={selectedPermissionIds.includes(p.id)}
-                                                    onChange={() => togglePermission(p.id)}
-                                                />
-                                                <div className="text-xs">
-                                                    <p className="font-medium text-foreground">{p.action}</p>
-                                                </div>
-                                            </label>
-                                        ))}
+                                        {group.map(p => {
+                                            const pid = `${p.resource}:${p.action}`;
+                                            return (
+                                                <label key={pid} className="flex items-start space-x-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+                                                        checked={selectedPermissionIds.includes(pid)}
+                                                        onChange={() => togglePermission(pid)}
+                                                    />
+                                                    <div className="text-xs">
+                                                        <p className="font-medium text-foreground">{p.action}</p>
+                                                        <p className="text-muted-foreground text-[10px]">{p.description}</p>
+                                                    </div>
+                                                </label>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             );

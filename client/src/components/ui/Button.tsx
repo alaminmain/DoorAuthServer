@@ -12,12 +12,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
 
         const variants = {
-            default: 'bg-primary-500 text-white hover:bg-primary-600 shadow-lg shadow-primary-500/30',
-            destructive: 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/30',
-            outline: 'border-2 border-primary-500 text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20',
+            default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/30',
+            destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/30',
+            outline: 'border-2 border-primary text-primary hover:bg-primary/10 dark:hover:bg-primary/20',
             secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
             ghost: 'hover:bg-accent hover:text-accent-foreground',
-            link: 'text-primary-500 underline-offset-4 hover:underline',
+            link: 'text-primary underline-offset-4 hover:underline',
         };
 
         const sizes = {

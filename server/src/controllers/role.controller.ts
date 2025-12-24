@@ -91,7 +91,7 @@ export class RoleController {
      */
     async createRole(req: Request, res: Response) {
         try {
-            const { name, description, tenantId } = req.body;
+            const { name, description, tenantId, permissionIds } = req.body;
 
             if (!name || !tenantId) {
                 res.status(400).json(ApiResponse.error('Name and tenantId are required'));
@@ -108,15 +108,41 @@ export class RoleController {
                 return;
             }
 
+            const data: any = {
+                name,
+                description,
+                tenantId,
+            };
+
+            if (req.body.applicationId) {
+                data.applicationId = req.body.applicationId;
+            }
+
+
+            const permissionInputs: any[] = [];
+            if (permissionIds && Array.isArray(permissionIds)) {
+                permissionIds.forEach((pid: string) => {
+                    const [resource, action] = pid.split(':');
+                    if (resource && action) {
+                        permissionInputs.push({ resource, action });
+                    }
+                });
+            }
+
+            if (permissionInputs.length > 0) {
+                data.permissions = {
+                    create: permissionInputs,
+                };
+            }
+
             const role = await prisma.role.create({
-                data: {
-                    name,
-                    description,
-                    tenantId,
-                },
+                data,
+                include: {
+                    permissions: true
+                }
             });
 
-            Logger.info('Role created', { roleId: role.id, name, tenantId });
+            Logger.info('Role created', { roleId: role.id, name, tenantId, permissionsCount: permissionIds?.length || 0 });
 
             res.status(201).json(ApiResponse.success(role, 'Role created successfully'));
         } catch (error: any) {
@@ -130,7 +156,7 @@ export class RoleController {
     async updateRole(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const { name, description } = req.body;
+            const { name, description, permissionIds } = req.body;
 
             const role = await prisma.role.findUnique({
                 where: { id },
@@ -141,12 +167,34 @@ export class RoleController {
                 return;
             }
 
+            const updateData: any = {
+                ...(name && { name }),
+                ...(description !== undefined && { description }),
+                ...(req.body.applicationId !== undefined && { applicationId: req.body.applicationId }),
+            };
+
+
+            if (permissionIds && Array.isArray(permissionIds)) {
+                const permissionInputs: any[] = [];
+                permissionIds.forEach((pid: string) => {
+                    const [resource, action] = pid.split(':');
+                    if (resource && action) {
+                        permissionInputs.push({ resource, action });
+                    }
+                });
+
+                updateData.permissions = {
+                    deleteMany: {},
+                    create: permissionInputs,
+                };
+            }
+
             const updated = await prisma.role.update({
                 where: { id },
-                data: {
-                    ...(name && { name }),
-                    ...(description !== undefined && { description }),
-                },
+                data: updateData,
+                include: {
+                    permissions: true
+                }
             });
 
             Logger.info('Role updated', { roleId: id });

@@ -42,17 +42,17 @@ export default function LoginForm() {
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-900 dark:to-gray-800 relative overflow-hidden">
             {/* Background Decorative Elements */}
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary-500/20 blur-[100px] animate-pulse" />
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[100px] animate-pulse" />
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/20 blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
 
             <Card className="w-full max-w-md border-opacity-20 glass shadow-2xl animate-scale-in">
                 <CardHeader className="space-y-4 text-center pb-2">
                     <div className="flex justify-center mb-2">
-                        <div className="p-3 rounded-2xl bg-primary-500/10 text-primary-500 ring-1 ring-primary-500/20">
+                        <div className="p-3 rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
                             <ShieldCheck className="h-10 w-10" />
                         </div>
                     </div>
-                    <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-blue-600 dark:from-primary-400 dark:to-blue-400">
+                    <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600 dark:from-primary dark:to-blue-400">
                         DoorAuth Admin
                     </CardTitle>
                     <CardDescription>
@@ -95,7 +95,7 @@ export default function LoginForm() {
 
                         <Button
                             type="submit"
-                            className="w-full h-11 text-base shadow-primary-500/25 mt-6"
+                            className="w-full h-11 text-base shadow-primary/25 mt-6"
                             isLoading={isSubmitting}
                         >
                             {isSubmitting ? 'Signing in...' : 'Sign In'}

@@ -92,7 +92,7 @@ export default function ApplicationForm({ application, onSubmit, onCancel, isLoa
                 <label className="block text-sm font-medium text-foreground mb-2">Tenant</label>
                 <select
                     {...register('tenantId')}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
                     disabled={!!application} // Cannot change tenant after creation usually
                 >
                     <option value="">Select a Tenant</option>

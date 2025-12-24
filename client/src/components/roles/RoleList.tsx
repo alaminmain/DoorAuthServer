@@ -41,7 +41,7 @@ export default function RoleList({ roles, onEdit, onDelete, isLoading }: RoleLis
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-muted-foreground hover:text-primary-500"
+                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
                                     onClick={() => onEdit(role)}
                                     title="Edit Role"
                                 >

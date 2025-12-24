@@ -74,12 +74,14 @@ export interface Role {
     createdAt: Date;
     updatedAt: Date;
     permissions?: Permission[];
+    applicationId?: string;
 }
 
 export interface CreateRoleDto {
     tenantId: string;
     name: string;
     description?: string;
+    applicationId?: string;
 }
 
 // Permission types
@@ -88,6 +90,7 @@ export interface Permission {
     roleId: string;
     resource: string;
     action: string;
+    description?: string;
 }
 
 export interface CreatePermissionDto {
@@ -155,5 +158,15 @@ export interface ActivityLog {
     action: string;
     resource: string;
     userName: string;
+    details?: string;
+    ipAddress?: string;
     timestamp: Date;
+}
+
+export interface ChangePasswordDto {
+    newPassword: string;
+}
+
+export interface ChangeLockStatusDto {
+    isLocked: boolean;
 }

@@ -23,6 +23,7 @@ export class ApplicationController {
                     redirectUris: true,
                     tenantId: true,
                     createdAt: true,
+                    status: true,
                     tenant: {
                         select: {
                             name: true,
@@ -35,7 +36,13 @@ export class ApplicationController {
                 },
             });
 
-            res.status(200).json(ApiResponse.success(applications));
+            // Convert comma-separated string to array for API response
+            const formattedApps = applications.map(app => ({
+                ...app,
+                redirectUris: app.redirectUris ? app.redirectUris.split(',') : []
+            }));
+
+            res.status(200).json(ApiResponse.success(formattedApps));
         } catch (error: any) {
             res.status(500).json(ApiResponse.error(error.message));
         }
@@ -65,7 +72,13 @@ export class ApplicationController {
                 return;
             }
 
-            res.status(200).json(ApiResponse.success(application));
+            // Convert comma-separated string to array
+            const formattedApp = {
+                ...application,
+                redirectUris: application.redirectUris ? application.redirectUris.split(',') : []
+            };
+
+            res.status(200).json(ApiResponse.success(formattedApp));
         } catch (error: any) {
             res.status(500).json(ApiResponse.error(error.message));
         }
@@ -76,7 +89,7 @@ export class ApplicationController {
      */
     async createApplication(req: Request, res: Response) {
         try {
-            const { name, redirectUris, tenantId } = req.body;
+            const { name, redirectUris, tenantId, description, appUrl } = req.body;
 
             if (!name || !redirectUris || !tenantId) {
                 res.status(400).json(ApiResponse.error('Name, redirectUris, and tenantId are required'));
@@ -97,12 +110,19 @@ export class ApplicationController {
             const clientId = `${name.toLowerCase().replace(/\s+/g, '-')}-${crypto.randomBytes(8).toString('hex')}`;
             const clientSecret = crypto.randomBytes(32).toString('hex');
 
+            // Handle redirectUris: Convert array to comma-separated string for DB
+            const redirectUrisString = Array.isArray(redirectUris)
+                ? redirectUris.join(',')
+                : redirectUris;
+
             const application = await prisma.application.create({
                 data: {
                     name,
+                    description,
+                    appUrl,
                     clientId,
                     clientSecret,
-                    redirectUris,
+                    redirectUris: redirectUrisString,
                     tenantId,
                 },
             });
@@ -113,6 +133,7 @@ export class ApplicationController {
                 ApiResponse.success(
                     {
                         ...application,
+                        redirectUris: Array.isArray(redirectUris) ? redirectUris : [redirectUris],
                         clientSecret, // Only shown once during creation
                     },
                     'Application created successfully. Save the client secret - it will not be shown again.'
@@ -129,7 +150,7 @@ export class ApplicationController {
     async updateApplication(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const { name, redirectUris } = req.body;
+            const { name, redirectUris, description, appUrl } = req.body;
 
             const application = await prisma.application.findUnique({
                 where: { id },
@@ -140,25 +161,43 @@ export class ApplicationController {
                 return;
             }
 
+            // Handle redirectUris if provided
+            const updateData: any = {
+                ...(name && { name }),
+                ...(description !== undefined && { description }),
+                ...(appUrl !== undefined && { appUrl }),
+            };
+
+            if (redirectUris) {
+                updateData.redirectUris = Array.isArray(redirectUris)
+                    ? redirectUris.join(',')
+                    : redirectUris;
+            }
+
             const updated = await prisma.application.update({
                 where: { id },
-                data: {
-                    ...(name && { name }),
-                    ...(redirectUris && { redirectUris }),
-                },
+                data: updateData,
                 select: {
                     id: true,
                     name: true,
+                    description: true,
+                    appUrl: true,
                     clientId: true,
                     redirectUris: true,
                     tenantId: true,
                     createdAt: true,
+                    status: true
                 },
             });
 
             Logger.info('Application updated', { applicationId: id });
 
-            res.status(200).json(ApiResponse.success(updated, 'Application updated successfully'));
+            const formattedUpdated = {
+                ...updated,
+                redirectUris: updated.redirectUris ? updated.redirectUris.split(',') : []
+            };
+
+            res.status(200).json(ApiResponse.success(formattedUpdated, 'Application updated successfully'));
         } catch (error: any) {
             res.status(500).json(ApiResponse.error(error.message));
         }

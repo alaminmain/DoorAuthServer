@@ -7,12 +7,14 @@ import Input from '../components/ui/Input';
 import Dialog from '../components/ui/Dialog';
 import UserList from '../components/users/UserList';
 import UserForm from '../components/users/UserForm';
+import UserDetailsModal from '../components/users/UserDetailsModal';
 
 export default function Users() {
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
+    const [detailsUser, setDetailsUser] = useState<User | undefined>(undefined);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -44,6 +46,10 @@ export default function Users() {
         setSelectedUser(user);
         setIsDialogOpen(true);
         setError(null);
+    };
+
+    const handleViewDetails = (user: User) => {
+        setDetailsUser(user);
     };
 
     const handleDelete = async (id: string) => {
@@ -126,6 +132,7 @@ export default function Users() {
                 users={filteredUsers}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onViewDetails={handleViewDetails}
                 isLoading={isLoading}
             />
 
@@ -142,6 +149,14 @@ export default function Users() {
                     isLoading={isSubmitting}
                 />
             </Dialog>
+
+            {detailsUser && (
+                <UserDetailsModal
+                    user={detailsUser}
+                    onClose={() => setDetailsUser(undefined)}
+                    onUpdate={fetchUsers}
+                />
+            )}
         </div>
     );
 }
