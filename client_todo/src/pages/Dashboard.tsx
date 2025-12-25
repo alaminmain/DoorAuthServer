@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { TodoService } from '../services/TodoService';
 import { useAuth } from '../auth/AuthProvider';
 import { LogOut, Plus, Trash2, CheckCircle, Circle } from 'lucide-react';
 
@@ -10,25 +11,34 @@ interface Todo {
 
 export default function Dashboard() {
     const { user, logout } = useAuth();
-    const [todos, setTodos] = useState<Todo[]>([
-        { id: 1, text: 'Integrate DoorAuth', completed: true },
-        { id: 2, text: 'Build Todo App', completed: false }
-    ]);
+    const [todos, setTodos] = useState<any[]>([]);
     const [newTodo, setNewTodo] = useState('');
 
-    const addTodo = (e: React.FormEvent) => {
+    useEffect(() => {
+        loadTodos();
+    }, []);
+
+    const loadTodos = async () => {
+        const data = await TodoService.getTodos();
+        setTodos(data);
+    };
+
+    const addTodo = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newTodo.trim()) return;
-        setTodos([...todos, { id: Date.now(), text: newTodo, completed: false }]);
+        await TodoService.addTodo(newTodo);
         setNewTodo('');
+        await loadTodos();
     };
 
-    const toggleTodo = (id: number) => {
-        setTodos(todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    const toggleTodo = async (id: string) => {
+        await TodoService.toggleTodo(id);
+        await loadTodos();
     };
 
-    const deleteTodo = (id: number) => {
-        setTodos(todos.filter(t => t.id !== id));
+    const deleteTodo = async (id: string) => {
+        await TodoService.deleteTodo(id);
+        await loadTodos();
     };
 
     return (

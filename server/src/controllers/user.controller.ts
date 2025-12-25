@@ -135,4 +135,64 @@ export class UserController {
             res.status(500).json(ApiResponse.error(error.message));
         }
     }
+
+    /**
+     * Bulk create users
+     */
+    async bulkCreateUsers(req: Request, res: Response) {
+        try {
+            const { tenantId, users } = req.body;
+
+            if (!tenantId || !Array.isArray(users)) {
+                res.status(400).json(ApiResponse.error('tenantId and users array are required'));
+                return;
+            }
+
+            const { PrismaClient } = require('@prisma/client');
+            const prisma = new PrismaClient();
+
+            // Verify tenant exists
+            const tenant = await prisma.tenant.findUnique({
+                where: { id: tenantId },
+            });
+
+            if (!tenant) {
+                res.status(404).json(ApiResponse.error('Tenant not found'));
+                return;
+            }
+
+            const result = await prisma.$transaction(async (tx: any) => {
+                const results = [];
+                for (const item of users) {
+                    const { email, userName, password, designation, isApproved } = item;
+
+                    if (!email || !password || !userName) {
+                        continue; // Skip invalid
+                    }
+
+                    const passwordHash = await bcrypt.hash(password, 10);
+
+                    const user = await tx.user.create({
+                        data: {
+                            email,
+                            loginId: email,
+                            userName,
+                            passwordHash,
+                            tenantId,
+                            designation: designation || 'Staff',
+                            isApproved: isApproved !== undefined ? isApproved : true,
+                        }
+                    });
+                    // Remove passwordHash from response
+                    const { passwordHash: _, ...userWithoutPassword } = user;
+                    results.push(userWithoutPassword);
+                }
+                return results;
+            });
+
+            res.status(201).json(ApiResponse.success(result, 'Users created successfully'));
+        } catch (error: any) {
+            res.status(500).json(ApiResponse.error(error.message));
+        }
+    }
 }

@@ -14,6 +14,45 @@ const userController = new UserController();
 
 /**
  * @swagger
+ * /api/users/bulk:
+ *   post:
+ *     summary: Bulk create users
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - tenantId
+ *               - users
+ *             properties:
+ *               tenantId:
+ *                 type: string
+ *               users:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - email
+ *                     - userName
+ *                     - password
+ *                   properties:
+ *                     email: { type: string }
+ *                     userName: { type: string }
+ *                     password: { type: string }
+ *                     designation: { type: string }
+ *     responses:
+ *       201:
+ *         description: Users created successfully
+ */
+router.post('/bulk', authMiddleware, userController.bulkCreateUsers.bind(userController));
+
+/**
+ * @swagger
  * /api/users:
  *   get:
  *     summary: Get all users

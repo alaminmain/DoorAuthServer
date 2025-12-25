@@ -113,6 +113,45 @@ router.post('/', authMiddleware, menuController.createMenu.bind(menuController))
 
 /**
  * @swagger
+ * /api/menus/bulk:
+ *   post:
+ *     summary: Bulk create menu items
+ *     tags: [Menus]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - applicationId
+ *               - menus
+ *             properties:
+ *               applicationId:
+ *                 type: string
+ *               menus:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - label
+ *                   properties:
+ *                     label: { type: string }
+ *                     path: { type: string }
+ *                     icon: { type: string }
+ *                     order: { type: integer }
+ *                     parentId: { type: string }
+ *                     requiredPermission: { type: string }
+ *     responses:
+ *       201:
+ *         description: Menus created successfully
+ */
+router.post('/bulk', authMiddleware, menuController.bulkCreateMenus.bind(menuController));
+
+/**
+ * @swagger
  * /api/menus/{id}:
  *   put:
  *     summary: Update menu item

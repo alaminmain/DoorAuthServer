@@ -56,22 +56,16 @@ export class OAuthController {
                 codeChallengeMethod: code_challenge_method as string || 'S256',
             });
 
-            // Build redirect URL with authorization code
+
+
+            // Perform actual redirect
             const redirectUrl = new URL(redirect_uri as string);
             redirectUrl.searchParams.append('code', result.code);
             if (state) {
                 redirectUrl.searchParams.append('state', state as string);
             }
 
-            // In a real implementation, this would be a 302 redirect
-            // For API testing, we return the redirect URL
-            res.status(200).json(
-                ApiResponse.success({
-                    redirect_url: redirectUrl.toString(),
-                    code: result.code,
-                    expires_in: result.expiresIn,
-                }, 'Authorization code generated. Redirect user to the provided URL.')
-            );
+            res.redirect(redirectUrl.toString());
         } catch (error: any) {
             res.status(400).json(ApiResponse.error(error.message));
         }

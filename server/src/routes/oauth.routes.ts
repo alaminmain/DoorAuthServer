@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { OAuthController } from '../controllers/oauth.controller';
 import { authMiddleware } from '../middlewares/authMiddleware';
+import { optionalAuthMiddleware } from '../middlewares/optionalAuthMiddleware';
 
 const router = Router();
 const oauthController = new OAuthController();
@@ -81,7 +82,7 @@ const oauthController = new OAuthController();
  *       401:
  *         description: User not authenticated
  */
-router.get('/authorize', authMiddleware, oauthController.authorize.bind(oauthController));
+router.get('/authorize', optionalAuthMiddleware, oauthController.authorize.bind(oauthController));
 
 /**
  * @swagger

@@ -98,6 +98,80 @@ async function main() {
 
     console.log('Assigned Admin Role to User');
 
+
+    // 6. Create Todo Client Application
+    const todoApp = await prisma.application.upsert({
+        where: { clientId: 'todo-app-client' },
+        update: {},
+        create: {
+            name: 'Todo App',
+            description: 'Sample Todo Client',
+            clientId: 'todo-app-client',
+            clientSecret: 'todo-secret-key',
+            redirectUris: 'http://localhost:5175/callback',
+            tenantId: demoTenant.id,
+            status: 'active',
+        },
+    });
+
+    console.log(`Created App: ${todoApp.name} (${todoApp.id})`);
+
+    // 7. Create 'Todo User' Role for Todo App
+    const todoUserRole = await prisma.role.upsert({
+        where: {
+            tenantId_name: {
+                tenantId: demoTenant.id,
+                name: 'Todo User',
+            },
+        },
+        update: {},
+        create: {
+            name: 'Todo User',
+            description: 'Standard user for Todo Application',
+            isSystem: false,
+            tenantId: demoTenant.id,
+            applicationId: todoApp.id, // Linked to Todo App
+        },
+    });
+    console.log(`Created Role: ${todoUserRole.name}`);
+
+    // 8. Create a Standard User
+    const standardUser = await prisma.user.upsert({
+        where: {
+            tenantId_email: {
+                tenantId: demoTenant.id,
+                email: 'user@demo.localhost',
+            },
+        },
+        update: {},
+        create: {
+            email: 'user@demo.localhost',
+            loginId: 'user@demo.localhost',
+            userName: 'Standard User',
+            passwordHash, // Same password: password123
+            tenantId: demoTenant.id,
+            isApproved: true,
+            designation: 'Staff',
+        },
+    });
+    console.log(`Created User: ${standardUser.email}`);
+
+    // 9. Assign Todo User Role to Standard User
+    await prisma.userRole.upsert({
+        where: {
+            userId_roleId: {
+                userId: standardUser.id,
+                roleId: todoUserRole.id,
+            },
+        },
+        update: {},
+        create: {
+            userId: standardUser.id,
+            roleId: todoUserRole.id,
+        },
+    });
+    console.log('Assigned Todo User Role to Standard User');
+
     console.log('Seeding finished.');
 }
 

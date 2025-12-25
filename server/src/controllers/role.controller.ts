@@ -246,6 +246,71 @@ export class RoleController {
     }
 
     /**
+     * Bulk create roles
+     */
+    async bulkCreateRoles(req: Request, res: Response) {
+        try {
+            const { tenantId, roles } = req.body;
+
+            if (!tenantId || !Array.isArray(roles)) {
+                res.status(400).json(ApiResponse.error('tenantId and roles array are required'));
+                return;
+            }
+
+            // Verify tenant exists
+            const tenant = await prisma.tenant.findUnique({
+                where: { id: tenantId },
+            });
+
+            if (!tenant) {
+                res.status(404).json(ApiResponse.error('Tenant not found'));
+                return;
+            }
+
+            const result = await prisma.$transaction(async (tx) => {
+                const results = [];
+                for (const item of roles) {
+                    const { name, description, applicationId, permissionIds } = item;
+
+                    const data: any = {
+                        name,
+                        description,
+                        tenantId,
+                        applicationId // Optional
+                    };
+
+                    if (permissionIds && Array.isArray(permissionIds)) {
+                        const permissionInputs = permissionIds.map((pid: string) => {
+                            const [resource, action] = pid.split(':');
+                            if (resource && action) return { resource, action };
+                            return null;
+                        }).filter((p: any) => p !== null);
+
+                        if (permissionInputs.length > 0) {
+                            data.permissions = {
+                                create: permissionInputs
+                            };
+                        }
+                    }
+
+                    const role = await tx.role.create({
+                        data,
+                        include: { permissions: true }
+                    });
+                    results.push(role);
+                }
+                return results;
+            });
+
+            Logger.info('Bulk roles created', { count: result.length, tenantId });
+
+            res.status(201).json(ApiResponse.success(result, 'Roles created successfully'));
+        } catch (error: any) {
+            res.status(500).json(ApiResponse.error(error.message));
+        }
+    }
+
+    /**
      * Add permission to role
      */
     async addPermission(req: Request, res: Response) {

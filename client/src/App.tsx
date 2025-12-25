@@ -12,6 +12,7 @@ import Applications from './pages/Applications';
 import Roles from './pages/Roles';
 import Menus from './pages/Menus';
 import Users from './pages/Users';
+import UserRoles from './pages/UserRoles';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
               <Route path="roles" element={<Roles />} />
               <Route path="menus" element={<Menus />} />
               <Route path="users" element={<Users />} />
+              <Route path="user-roles" element={<UserRoles />} />
               <Route path="settings" element={<div className="p-4">Settings (Coming Soon)</div>} />
 
               <Route path="*" element={<Navigate to="/" replace />} />

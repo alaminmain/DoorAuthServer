@@ -204,6 +204,60 @@ export class MenuController {
     }
 
     /**
+     * Bulk create menus
+     */
+    async bulkCreateMenus(req: Request, res: Response) {
+        try {
+            const { applicationId, menus } = req.body;
+
+            if (!applicationId || !Array.isArray(menus)) {
+                res.status(400).json(ApiResponse.error('applicationId and menus array are required'));
+                return;
+            }
+
+            // Verify application exists
+            const application = await prisma.application.findUnique({
+                where: { id: applicationId },
+            });
+
+            if (!application) {
+                res.status(404).json(ApiResponse.error('Application not found'));
+                return;
+            }
+
+            const createdMenus = [];
+
+            // Execute sequentially to maintain order if relevant, or use transaction
+            // Using transaction for atomicity
+            const result = await prisma.$transaction(async (tx) => {
+                const results = [];
+                for (const item of menus) {
+                    const { label, path, icon, order, parentId, requiredPermission } = item;
+                    const menu = await tx.menu.create({
+                        data: {
+                            label,
+                            path,
+                            icon,
+                            order: order || 0,
+                            parentId: parentId || null,
+                            applicationId,
+                            requiredPermission,
+                        },
+                    });
+                    results.push(menu);
+                }
+                return results;
+            });
+
+            Logger.info('Bulk menus created', { count: result.length, applicationId });
+
+            res.status(201).json(ApiResponse.success(result, 'Menus created successfully'));
+        } catch (error: any) {
+            res.status(500).json(ApiResponse.error(error.message));
+        }
+    }
+
+    /**
      * Get Smart Menu for current user (filtered by permissions)
      */
     async getSmartMenu(req: Request, res: Response) {

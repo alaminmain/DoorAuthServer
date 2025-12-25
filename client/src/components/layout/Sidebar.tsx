@@ -25,6 +25,7 @@ const navItems = [
     { label: 'Roles & Permissions', path: '/roles', icon: Shield },
     { label: 'Menu Builder', path: '/menus', icon: MenuSquare },
     { label: 'Users', path: '/users', icon: Users },
+    { label: 'User Roles', path: '/user-roles', icon: ShieldCheck },
     { label: 'Settings', path: '/settings', icon: Settings },
 ];
 

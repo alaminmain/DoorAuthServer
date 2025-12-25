@@ -15,4 +15,8 @@ export const SYSTEM_PERMISSIONS = [
     { resource: 'menus', action: 'write', description: 'Create, update, delete menus' },
 
     { resource: 'audit-logs', action: 'read', description: 'View audit logs' },
+
+    // Accounting App Permissions
+    { resource: 'accounting', action: 'read', description: 'View accounting data' },
+    { resource: 'accounting', action: 'write', description: 'Manage accounting records' },
 ];

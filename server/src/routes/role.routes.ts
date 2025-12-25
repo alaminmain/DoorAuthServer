@@ -80,6 +80,43 @@ router.post('/', authMiddleware, roleController.createRole.bind(roleController))
 
 /**
  * @swagger
+ * /api/roles/bulk:
+ *   post:
+ *     summary: Bulk create roles
+ *     tags: [Roles]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - tenantId
+ *               - roles
+ *             properties:
+ *               tenantId:
+ *                 type: string
+ *               roles:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - name
+ *                   properties:
+ *                     name: { type: string }
+ *                     description: { type: string }
+ *                     applicationId: { type: string }
+ *                     permissionIds: { type: array, items: { type: string } }
+ *     responses:
+ *       201:
+ *         description: Roles created successfully
+ */
+router.post('/bulk', authMiddleware, roleController.bulkCreateRoles.bind(roleController));
+
+/**
+ * @swagger
  * /api/roles/{id}:
  *   put:
  *     summary: Update role
