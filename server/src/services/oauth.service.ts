@@ -170,6 +170,22 @@ export class OAuthService {
             { expiresIn: '1h' }
         );
 
+        // Generate ID token for OpenID Connect
+        const idToken = jwt.sign(
+            {
+                sub: user.id,
+                email: user.email,
+                email_verified: user.isApproved,
+                name: user.userName,
+                preferred_username: user.loginId,
+                aud: clientId,
+                iss: process.env.ISSUER_URL || 'http://localhost:3000',
+                iat: Math.floor(Date.now() / 1000),
+                exp: Math.floor(Date.now() / 1000) + 3600,
+            },
+            JWT_SECRET
+        );
+
         // Generate refresh token
         const refreshToken = crypto.randomBytes(32).toString('hex');
         const refreshExpiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY);
@@ -191,6 +207,7 @@ export class OAuthService {
             token_type: 'Bearer',
             expires_in: 3600,
             refresh_token: refreshToken,
+            id_token: idToken,
             scope: authCode.scope,
         };
     }

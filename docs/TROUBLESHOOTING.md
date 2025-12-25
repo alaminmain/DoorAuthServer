@@ -162,7 +162,64 @@ http://localhost:3000
 
 ---
 
+## OIDC / OAuth Integration Errors
+
+### Error: IDX20803 - Unable to obtain configuration
+
+**Cause**: Cannot access `/.well-known/openid-configuration`
+
+**Solution**:
+```bash
+# Test the discovery endpoint
+curl http://localhost:3000/.well-known/openid-configuration
+
+# If it fails, ensure server is running
+npm run dev
+```
+
+### Error: IDX20807 - Unable to retrieve document
+
+**Cause**: Network connectivity or server not running
+
+**Solution**:
+1. Verify server is running on port 3000
+2. Check firewall settings
+3. Ensure correct authority URL in client config
+
+### Error: OpenIdConnectProtocolException
+
+**Cause**: Invalid error response format from token endpoint
+
+**Solution**: This has been fixed. Token endpoint now returns standard OAuth 2.0 errors:
+```json
+{
+  "error": "invalid_grant",
+  "error_description": "Authorization code expired"
+}
+```
+
+### Error: Missing id_token in response
+
+**Cause**: ID token not included in token response
+
+**Solution**: This has been fixed. Token response now includes:
+- `access_token` - For API access
+- `id_token` - For user identity (OIDC)
+- `refresh_token` - For token refresh
+
+### Error: Invalid client credentials
+
+**Cause**: Wrong client_id or client_secret
+
+**Solution**:
+1. Check credentials in DoorAuth admin panel
+2. Verify environment variables match
+3. Ensure no trailing spaces in secrets
+
+---
+
 ## Common Issues Checklist
+
 
 - [ ] Node.js 18+ installed
 - [ ] All dependencies installed (`npm install`)

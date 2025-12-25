@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
 import routes from './routes';
+import wellKnownRoutes from './routes/well-known.routes';
 import { Logger } from './utils/Logger';
 import { swaggerSpec } from './config/swagger';
 
@@ -16,7 +17,11 @@ app.use(cors({
   origin: true, // Allow all origins for demo
   credentials: true // Allow cookies
 }));
-app.use(express.json());
+
+// Body parsers - MUST support both JSON and form-encoded for OIDC
+app.use(express.json()); // For JSON requests
+app.use(express.urlencoded({ extended: true })); // For form-encoded requests (OIDC standard)
+
 app.use(cookieParser());
 
 // Swagger Documentation
@@ -30,6 +35,9 @@ app.get('/api-docs.json', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
+
+// OpenID Connect Discovery (must be before /api routes)
+app.use('/.well-known', wellKnownRoutes);
 
 app.use('/api', routes);
 

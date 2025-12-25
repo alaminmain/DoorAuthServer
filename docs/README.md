@@ -14,6 +14,7 @@ Complete documentation for the DoorAuthServer - A production-ready, multi-tenant
 - **Swagger UI**: http://localhost:3000/api-docs (when server is running)
 
 ### Features & Guides
+- **[OIDC Integration Guide](OIDC_INTEGRATION_GUIDE.md)** - OpenID Connect integration for .NET and JavaScript
 - **[2FA Guide](2FA_GUIDE.md)** - Two-Factor Authentication setup and testing
 - **[Password Recovery Guide](PASSWORD_RECOVERY_GUIDE.md)** - Password reset flow
 - **[Account Security Guide](ACCOUNT_SECURITY_GUIDE.md)** - Brute force protection and account locking
@@ -56,6 +57,7 @@ docs/
 ├── IMPLEMENTATION_COMPLETE.md          # Complete feature list
 ├── TESTING_GUIDE.md                    # Testing documentation
 ├── SWAGGER_GUIDE.md                    # API documentation guide
+├── OIDC_INTEGRATION_GUIDE.md           # OpenID Connect integration
 ├── 2FA_GUIDE.md                        # 2FA implementation
 ├── PASSWORD_RECOVERY_GUIDE.md          # Password reset
 ├── ACCOUNT_SECURITY_GUIDE.md           # Security features
