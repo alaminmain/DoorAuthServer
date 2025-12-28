@@ -172,6 +172,58 @@ async function main() {
     });
     console.log('Assigned Todo User Role to Standard User');
 
+    // 10. Create Vehicle Management Web Application
+    const vehicleApp = await prisma.application.upsert({
+        where: { clientId: 'vehicle-management-web' },
+        update: {},
+        create: {
+            name: 'Vehicle Management System',
+            description: 'Vehicle Management Web Application',
+            clientId: 'vehicle-management-web',
+            clientSecret: 'vehicle-secret-key',
+            redirectUris: 'https://localhost:7231/signin-oidc,https://localhost:7231/signout-callback-oidc', // Comma separated if multiple
+            tenantId: demoTenant.id,
+            status: 'active',
+        },
+    });
+
+    console.log(`Created App: ${vehicleApp.name} (${vehicleApp.id})`);
+
+    // 11. Create 'Vehicle User' Role
+    const vehicleUserRole = await prisma.role.upsert({
+        where: {
+            tenantId_name: {
+                tenantId: demoTenant.id,
+                name: 'Vehicle User',
+            },
+        },
+        update: {},
+        create: {
+            name: 'Vehicle User',
+            description: 'User for Vehicle Management System',
+            isSystem: false,
+            tenantId: demoTenant.id,
+            applicationId: vehicleApp.id,
+        },
+    });
+    console.log(`Created Role: ${vehicleUserRole.name}`);
+
+    // 12. Assign Vehicle User Role to Standard User
+    await prisma.userRole.upsert({
+        where: {
+            userId_roleId: {
+                userId: standardUser.id,
+                roleId: vehicleUserRole.id,
+            },
+        },
+        update: {},
+        create: {
+            userId: standardUser.id,
+            roleId: vehicleUserRole.id,
+        },
+    });
+    console.log('Assigned Vehicle User Role to Standard User');
+
     console.log('Seeding finished.');
 }
 

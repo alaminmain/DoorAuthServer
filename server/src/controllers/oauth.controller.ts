@@ -124,12 +124,29 @@ export class OAuthController {
      */
     async token(req: Request, res: Response) {
         try {
+            let client_id = req.body.client_id;
+            let client_secret = req.body.client_secret;
+
+            // Check if credentials are in Authorization header (Basic Auth)
+            const authHeader = req.get('authorization');
+            if (authHeader && authHeader.startsWith('Basic ')) {
+                const base64Credentials = authHeader.substring(6);
+                const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
+                const [headerClientId, headerClientSecret] = credentials.split(':');
+
+                // Use header credentials if body credentials are missing
+                if (!client_id) client_id = headerClientId;
+                if (!client_secret) client_secret = headerClientSecret;
+
+                Logger.info('[OIDC] Client credentials extracted from Authorization header', {
+                    client_id: headerClientId
+                });
+            }
+
             const {
                 grant_type,
                 code,
                 redirect_uri,
-                client_id,
-                client_secret,
                 refresh_token,
                 code_verifier,
             } = req.body;
@@ -144,8 +161,10 @@ export class OAuthController {
                 has_code: !!code,
                 has_refresh_token: !!refresh_token,
                 has_code_verifier: !!code_verifier,
+                has_client_secret: !!client_secret,
                 content_type: contentType,
                 body_keys: Object.keys(req.body),
+                has_auth_header: !!authHeader,
                 clientIp
             });
 

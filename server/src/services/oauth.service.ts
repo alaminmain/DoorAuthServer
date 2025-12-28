@@ -80,7 +80,23 @@ export class OAuthService {
             where: { clientId },
         });
 
+        Logger.info('[DEBUG] Application lookup result', {
+            clientId,
+            found: !!application,
+            hasClientSecret: !!application?.clientSecret,
+            providedSecretLength: clientSecret?.length,
+            storedSecretLength: application?.clientSecret?.length,
+            secretsMatch: application?.clientSecret === clientSecret
+        });
+
         if (!application || application.clientSecret !== clientSecret) {
+            Logger.error('[DEBUG] Client credentials validation failed', {
+                clientId,
+                applicationFound: !!application,
+                providedSecret: clientSecret?.substring(0, 10) + '...',
+                storedSecret: application?.clientSecret?.substring(0, 10) + '...',
+                match: application?.clientSecret === clientSecret
+            });
             throw new Error('Invalid client credentials');
         }
 
@@ -179,7 +195,7 @@ export class OAuthService {
                 name: user.userName,
                 preferred_username: user.loginId,
                 aud: clientId,
-                iss: process.env.ISSUER_URL || 'http://localhost:3000',
+                iss: process.env.ISSUER_URL || 'https://localhost:3000',
                 iat: Math.floor(Date.now() / 1000),
                 exp: Math.floor(Date.now() / 1000) + 3600,
             },
