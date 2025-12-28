@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Copy, Check } from 'lucide-react';
 import { applicationService } from '../services/application.service';
 import type { Application, CreateApplicationDto } from '../types';
 import Button from '../components/ui/Button';
@@ -16,6 +16,8 @@ export default function Applications() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [secretInfo, setSecretInfo] = useState<{ clientId: string; clientSecret: string } | null>(null);
+    const [copiedField, setCopiedField] = useState<'clientId' | 'clientSecret' | null>(null);
 
     const fetchApplications = async () => {
         try {
@@ -69,7 +71,10 @@ export default function Applications() {
                 const created = await applicationService.create(data);
                 setApplications(prev => [...prev, created]);
                 if (created.clientSecret) {
-                    alert(`Application Created Successfully!\n\nClient ID: ${created.clientId}\nClient Secret: ${created.clientSecret}\n\nPlease copy the Client Secret now. It will not be shown again.`);
+                    setSecretInfo({
+                        clientId: created.clientId,
+                        clientSecret: created.clientSecret
+                    });
                 }
             }
 
@@ -86,9 +91,25 @@ export default function Applications() {
 
         try {
             const { clientSecret } = await applicationService.regenerateSecret(id);
-            alert(`New Client Secret: ${clientSecret}\n\nPlease copy this now. It will not be shown again.`);
+            const app = applications.find(a => a.id === id);
+            if (app) {
+                setSecretInfo({
+                    clientId: app.clientId,
+                    clientSecret: clientSecret
+                });
+            }
         } catch (err: any) {
             setError(err.message || 'Failed to regenerate secret');
+        }
+    };
+
+    const handleCopy = async (text: string, field: 'clientId' | 'clientSecret') => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedField(field);
+            setTimeout(() => setCopiedField(null), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
         }
     };
 
@@ -148,6 +169,76 @@ export default function Applications() {
                     onCancel={() => setIsDialogOpen(false)}
                     isLoading={isSubmitting}
                 />
+            </Dialog>
+
+            <Dialog
+                isOpen={!!secretInfo}
+                onClose={() => setSecretInfo(null)}
+                title="Application Credentials"
+                maxWidth="md"
+            >
+                {secretInfo && (
+                    <div className="space-y-4">
+                        <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/20 text-yellow-800 dark:text-yellow-400 p-4 rounded-lg text-sm">
+                            <p className="font-semibold mb-1">⚠️ Important</p>
+                            <p>Please copy the Client Secret now. It will not be shown again for security reasons.</p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Client ID</label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={secretInfo.clientId}
+                                        readOnly
+                                        className="flex-1 font-mono text-sm"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => handleCopy(secretInfo.clientId, 'clientId')}
+                                        className="px-3"
+                                    >
+                                        {copiedField === 'clientId' ? (
+                                            <Check size={18} className="text-green-600" />
+                                        ) : (
+                                            <Copy size={18} />
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Client Secret</label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={secretInfo.clientSecret}
+                                        readOnly
+                                        className="flex-1 font-mono text-sm"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => handleCopy(secretInfo.clientSecret, 'clientSecret')}
+                                        className="px-3"
+                                    >
+                                        {copiedField === 'clientSecret' ? (
+                                            <Check size={18} className="text-green-600" />
+                                        ) : (
+                                            <Copy size={18} />
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end pt-4">
+                            <Button onClick={() => setSecretInfo(null)}>
+                                I've Saved the Credentials
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </Dialog>
         </div>
     );

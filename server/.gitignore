@@ -33,6 +33,7 @@ Thumbs.db
 
 # Keys - IMPORTANT: Never commit private keys!
 keys/
+certs/
 *.pem
 *.key
 *.p12

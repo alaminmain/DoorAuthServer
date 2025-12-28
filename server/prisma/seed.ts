@@ -49,7 +49,7 @@ async function main() {
             description: 'The main administration interface',
             clientId: 'admin-panel-client-id',
             clientSecret: 'super-secret-key-change-me', // In prod, hash this or manage securely
-            redirectUris: 'http://localhost:5173/callback',
+            redirectUris: 'https://localhost:5173/callback',
             tenantId: demoTenant.id,
         },
     });
@@ -108,7 +108,7 @@ async function main() {
             description: 'Sample Todo Client',
             clientId: 'todo-app-client',
             clientSecret: 'todo-secret-key',
-            redirectUris: 'http://localhost:5175/callback',
+            redirectUris: 'https://localhost:5175/callback',
             tenantId: demoTenant.id,
             status: 'active',
         },
