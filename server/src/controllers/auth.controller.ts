@@ -19,10 +19,11 @@ export class AuthController {
       const result = await authService.login(req.body);
 
       // Set HttpOnly cookie for SSO/OAuth
+      // Set HttpOnly cookie for SSO/OAuth
       res.cookie('access_token', result.token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: true, // Always secure for HTTPS
+        sameSite: 'none', // Allow cross-site usage
         maxAge: 3600000 // 1 hour
       });
 

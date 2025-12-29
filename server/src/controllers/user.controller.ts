@@ -136,6 +136,50 @@ export class UserController {
         }
     }
 
+    async getMyApplications(req: Request, res: Response) {
+        try {
+            const currentUser = (req as any).user;
+            const userId = currentUser?.userId || currentUser?.id; // Fix: OAuth token has userId, login token has id
+
+            if (!userId) {
+                return res.status(401).json(ApiResponse.error('Unauthorized'));
+            }
+
+            const { PrismaClient } = require('@prisma/client');
+            const prisma = new PrismaClient();
+
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                include: {
+                    roles: {
+                        include: {
+                            role: {
+                                include: {
+                                    application: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (!user) {
+                return res.status(404).json(ApiResponse.error('User not found'));
+            }
+
+            const apps = user.roles
+                .map((ur: any) => ur.role.application)
+                .filter((app: any) => app != null);
+
+            // Deduplicate by ID
+            const uniqueApps = Array.from(new Map(apps.map((item: any) => [item.id, item])).values());
+
+            res.status(200).json(ApiResponse.success(uniqueApps, 'User applications retrieved'));
+        } catch (error: any) {
+            res.status(500).json(ApiResponse.error(error.message));
+        }
+    }
+
     /**
      * Bulk create users
      */

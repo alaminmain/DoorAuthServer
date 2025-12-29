@@ -65,7 +65,7 @@ export class OAuthController {
                     redirect_uri
                 });
                 // Redirect to login page
-                const loginUrl = new URL('http://localhost:5173/login');
+                const loginUrl = new URL(process.env.LOGIN_URL || 'https://localhost:3000/login');
                 const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
                 loginUrl.searchParams.append('returnUrl', fullUrl);
                 res.redirect(loginUrl.toString());

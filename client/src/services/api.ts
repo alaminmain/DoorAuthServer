@@ -8,7 +8,8 @@ class ApiService {
 
     constructor() {
         this.api = axios.create({
-            baseURL: API_BASE_URL,
+            baseURL: 'https://localhost:3000/api', // Point to Proxy/Same Origin
+            withCredentials: true,
             headers: {
                 'Content-Type': 'application/json',
             },

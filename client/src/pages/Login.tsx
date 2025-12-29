@@ -35,11 +35,7 @@ export default function LoginForm() {
             setError(null);
             await login(data);
 
-            // Set SSO cookie
-            const token = localStorage.getItem('token');
-            if (token) {
-                document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Lax`;
-            }
+            // Cookie is managed by the server (HttpOnly)
 
             const returnUrl = searchParams.get('returnUrl');
             if (returnUrl) {

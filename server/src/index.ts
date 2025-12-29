@@ -44,13 +44,32 @@ app.use('/.well-known', wellKnownRoutes);
 
 app.use('/api', routes);
 
-app.get('/', (req, res) => {
-  res.json({
-    message: 'DoorAuthServer API is running',
-    documentation: '/api-docs',
-    version: '1.0.0',
+// PROXY CONFIGURATION (For React App)
+// In development, proxy all non-API requests to Vite Dev Server
+if (process.env.NODE_ENV !== 'production') {
+  const { createProxyMiddleware } = require('http-proxy-middleware');
+
+  // Proxy for React App
+  app.use('/', createProxyMiddleware({
+    target: 'https://localhost:5173',
+    changeOrigin: true,
+    secure: false, // Accept self-signed certs from Vite
+    ws: true, // Enable Websockets for HMR
+    logLevel: 'error', // Reduce noise
+    pathFilter: (path: string) => {
+      // Don't proxy API, Docs, or .well-known
+      if (path.startsWith('/api') || path.startsWith('/api-docs') || path.startsWith('/.well-known') || path.startsWith('/health')) {
+        return false;
+      }
+      return true;
+    }
+  }));
+} else {
+  // In production, serve static files (placeholder)
+  app.get('/', (req, res) => {
+    res.json({ message: 'Production static files would be served here' });
   });
-});
+}
 
 app.get('/health', async (req, res) => {
   try {

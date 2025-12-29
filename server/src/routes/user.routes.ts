@@ -72,6 +72,20 @@ router.get('/', authMiddleware, userController.getAll.bind(userController));
 
 /**
  * @swagger
+ * /api/users/me/applications:
+ *   get:
+ *     summary: Get currently logged in user's applications
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of applications
+ */
+router.get('/me/applications', authMiddleware, userController.getMyApplications.bind(userController));
+
+/**
+ * @swagger
  * /api/users/{id}:
  *   get:
  *     summary: Get user by ID
