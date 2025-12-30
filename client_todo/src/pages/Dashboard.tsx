@@ -3,12 +3,6 @@ import { TodoService } from '../services/TodoService';
 import { useAuth } from '../auth/AuthProvider';
 import { LogOut, Plus, Trash2, CheckCircle, Circle } from 'lucide-react';
 
-interface Todo {
-    id: number;
-    text: string;
-    completed: boolean;
-}
-
 export default function Dashboard() {
     const { user, logout } = useAuth();
     const [todos, setTodos] = useState<any[]>([]);
@@ -53,10 +47,17 @@ export default function Dashboard() {
                             <div className="text-xs text-gray-500">ID: {user?.userId}</div>
                             <div className="text-xs text-gray-400">Tenant: {user?.tenantId}</div>
                         </div>
+                        <a
+                            href="https://localhost:7140"
+                            className="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+                            title="Back to Portal"
+                        >
+                            ← Portal
+                        </a>
                         <button
                             onClick={logout}
                             className="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-gray-100 transition-colors"
-                            title="Logout"
+                            title="Logout from DoorAuth (all apps)"
                         >
                             <LogOut size={20} />
                         </button>

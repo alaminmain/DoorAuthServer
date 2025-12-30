@@ -32,9 +32,9 @@
                                     
                                     @if (!string.IsNullOrEmpty(app.AppUrl))
                                     {
-                                        <a href="@app.AppUrl" target="_blank" class="btn btn-primary btn-lg w-100">
+                                        <button onclick="launchApp('@app.AppUrl', '@app.Name')" class="btn btn-primary btn-lg w-100">
                                             Launch App &rarr;
-                                        </a>
+                                        </button>
                                     }
                                     else
                                     {
@@ -68,6 +68,40 @@
         </div>
     }
 </div>
+
+@* Hidden field to store access token for JavaScript *@
+<input type="hidden" id="accessToken" value="@Model.AccessToken" />
+
+<script>
+    function launchApp(appUrl, appName) {
+        const token = document.getElementById('accessToken').value;
+        
+        if (!token) {
+            alert('No access token found. Please login again.');
+            window.location.href = '/login';
+            return;
+        }
+        
+        console.log('🚀 Launching app:', appName);
+        console.log('📍 Original App URL:', appUrl);
+        console.log('📍 Has trailing slash:', appUrl.endsWith('/'));
+        console.log('🎫 Token available:', token ? 'Yes' : 'No');
+        
+        // Remove trailing slash from appUrl to avoid double slashes
+        const cleanAppUrl = appUrl.endsWith('/') ? appUrl.slice(0, -1) : appUrl;
+        console.log('✨ Cleaned App URL:', cleanAppUrl);
+        
+        // Construct SSO URL with token
+        const ssoUrl = `${cleanAppUrl}/sso?token=${encodeURIComponent(token)}`;
+        
+        console.log('🔗 Final SSO URL:', ssoUrl);
+        console.log('🔍 Check for double slashes:', ssoUrl.includes('//sso') ? '❌ FOUND DOUBLE SLASH!' : '✅ No double slash');
+        
+        // Replace current window instead of opening new tab
+        // This ensures single session context for proper logout
+        window.location.href = ssoUrl;
+    }
+</script>
 
 <style>
     .hover-shadow:hover {

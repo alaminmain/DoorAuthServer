@@ -24,6 +24,7 @@ router.get('/openid-configuration', (req: Request, res: Response) => {
         authorization_endpoint: `${baseUrl}/api/oauth/authorize`,
         token_endpoint: `${baseUrl}/api/oauth/token`,
         userinfo_endpoint: `${baseUrl}/api/oauth/userinfo`,
+        end_session_endpoint: `${baseUrl}/api/oauth/end_session`,
         revocation_endpoint: `${baseUrl}/api/oauth/revoke`,
         jwks_uri: `${baseUrl}/.well-known/jwks.json`,
         response_types_supported: ['code', 'token', 'id_token', 'code token', 'code id_token', 'token id_token', 'code token id_token'],

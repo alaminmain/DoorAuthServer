@@ -12,5 +12,11 @@ export default defineConfig({
       cert: fs.readFileSync(path.resolve(__dirname, '../server/certs/cert.pem')),
     },
     port: 5173,
+    hmr: {
+      protocol: 'wss',
+      host: 'localhost',
+      port: 5173,
+      clientPort: 5173,
+    },
   },
 })

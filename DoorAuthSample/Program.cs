@@ -43,7 +43,7 @@ builder.Services.AddAuthentication(options =>
         AuthorizationEndpoint = "https://localhost:3000/api/oauth/authorize",
         TokenEndpoint = "https://localhost:3000/api/oauth/token",
         UserInfoEndpoint = "https://localhost:3000/api/oauth/userinfo",
-        EndSessionEndpoint = "https://localhost:3000/api/oauth/revoke",
+        EndSessionEndpoint = "https://localhost:3000/api/oauth/end_session",
         JwksUri = "https://localhost:3000/.well-known/jwks.json"
     };
 

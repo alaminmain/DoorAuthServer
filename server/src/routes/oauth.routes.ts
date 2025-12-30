@@ -220,4 +220,48 @@ router.get('/userinfo', authMiddleware, oauthController.userinfo.bind(oauthContr
  */
 router.post('/revoke', oauthController.revoke.bind(oauthController));
 
+/**
+ * @swagger
+ * /oauth/end_session:
+ *   get:
+ *     summary: OIDC End Session Endpoint (Logout)
+ *     tags: [OAuth/OIDC]
+ *     parameters:
+ *       - in: query
+ *         name: id_token_hint
+ *         schema:
+ *           type: string
+ *         description: ID Token hint
+ *       - in: query
+ *         name: post_logout_redirect_uri
+ *         schema:
+ *           type: string
+ *         description: Where to redirect after logout
+ *       - in: query
+ *         name: state
+ *         schema:
+ *           type: string
+ *         description: State parameter
+ *     responses:
+ *       302:
+ *         description: Redirect to post_logout_redirect_uri
+ */
+router.get('/end_session', (req, res) => {
+    const { post_logout_redirect_uri, state } = req.query;
+
+    // Clear any server-side session if needed
+    // For now, just redirect back to the client
+
+    let redirectUrl = post_logout_redirect_uri as string || '/';
+
+    // Append state if provided
+    if (state) {
+        const separator = redirectUrl.includes('?') ? '&' : '?';
+        redirectUrl = `${redirectUrl}${separator}state=${state}`;
+    }
+
+    console.log('[OIDC] End session - redirecting to:', redirectUrl);
+    res.redirect(redirectUrl);
+});
+
 export default router;

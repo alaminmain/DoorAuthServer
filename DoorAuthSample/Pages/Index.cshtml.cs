@@ -16,12 +16,15 @@ public class IndexModel : PageModel
     }
 
     public List<ApplicationViewModel> Applications { get; set; } = new();
+    
+    public string AccessToken { get; set; } = string.Empty;
 
     public async Task OnGetAsync()
     {
         if (User.Identity?.IsAuthenticated == true)
         {
             var accessToken = await HttpContext.GetTokenAsync("access_token");
+            AccessToken = accessToken ?? string.Empty;
             
             if (!string.IsNullOrEmpty(accessToken))
             {
