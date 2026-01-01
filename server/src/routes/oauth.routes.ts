@@ -247,10 +247,38 @@ router.post('/revoke', oauthController.revoke.bind(oauthController));
  *         description: Redirect to post_logout_redirect_uri
  */
 router.get('/end_session', (req, res) => {
-    const { post_logout_redirect_uri, state } = req.query;
+    const { post_logout_redirect_uri, state, id_token_hint } = req.query;
 
-    // Clear any server-side session if needed
-    // For now, just redirect back to the client
+    console.log('[OIDC] End session request received', {
+        post_logout_redirect_uri,
+        has_id_token_hint: !!id_token_hint,
+        has_state: !!state,
+        origin: req.get('origin'),
+        referer: req.get('referer')
+    });
+
+    // Clear ALL possible authentication cookies with comprehensive options
+    const cookieOptions = {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none' as const,
+        path: '/'
+    };
+
+    // Clear the JWT authentication cookie (used by OAuth clients)
+    res.clearCookie('jwt', cookieOptions);
+
+    // Clear the access_token cookie (used by React frontend)
+    res.clearCookie('access_token', cookieOptions);
+
+    // Clear express session cookie
+    res.clearCookie('connect.sid', cookieOptions);
+
+    // Also try clearing without httpOnly in case some cookies were set differently
+    res.clearCookie('jwt', { secure: true, sameSite: 'none' as const, path: '/' });
+    res.clearCookie('access_token', { secure: true, sameSite: 'none' as const, path: '/' });
+
+    console.log('[OIDC] All session cookies cleared (jwt, access_token, connect.sid)');
 
     let redirectUrl = post_logout_redirect_uri as string || '/';
 

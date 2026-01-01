@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -31,6 +33,7 @@ builder.Services.AddAuthentication(options =>
     
     // Callback path
     options.CallbackPath = "/signin-oidc";
+    options.SignedOutCallbackPath = "/signout-callback-oidc";
     
     // Hardcode metadata because we use self-signed certs
     options.MetadataAddress = "https://localhost:3000/.well-known/openid-configuration";
@@ -138,12 +141,15 @@ app.MapGet("/login", (HttpContext context) =>
 });
 
 // Logout Trigger
-app.MapGet("/logout", (HttpContext context) =>
+app.MapGet("/logout", async (HttpContext context) =>
 {
-    return Results.SignOut(new Microsoft.AspNetCore.Authentication.AuthenticationProperties 
-    { 
-        RedirectUri = "/" 
-    }, authenticationSchemes: new List<string> { "Cookies", "oidc" });
+    // Sign out from both the cookie scheme and OIDC
+    // This will clear local cookies AND redirect to the OIDC end_session endpoint
+    await context.SignOutAsync("Cookies");
+    await context.SignOutAsync("oidc", new Microsoft.AspNetCore.Authentication.AuthenticationProperties
+    {
+        RedirectUri = "/"
+    });
 });
 
 app.Run();

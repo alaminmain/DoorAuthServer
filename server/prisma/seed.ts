@@ -111,13 +111,16 @@ async function main() {
     // 6. Create Todo Client Application
     const todoApp = await prisma.application.upsert({
         where: { clientId: 'todo-app-client' },
-        update: {},
+        update: {
+            appUrl: 'http://localhost:5175',
+        },
         create: {
             name: 'Todo App',
             description: 'Sample Todo Client',
             clientId: 'todo-app-client',
             clientSecret: 'todo-secret-key',
             redirectUris: 'https://localhost:5175/callback',
+            appUrl: 'http://localhost:5175',
             tenantId: demoTenant.id,
             status: 'active',
         },
@@ -240,14 +243,14 @@ async function main() {
     const sampleApp = await prisma.application.upsert({
         where: { clientId: 'door-auth-sample' },
         update: {
-            redirectUris: 'https://localhost:7140/signin-oidc',
+            redirectUris: 'https://localhost:7140/signin-oidc,https://localhost:7140/signout-callback-oidc',
         },
         create: {
             name: 'DoorAuth Sample App',
             description: 'Minimal dotnet sample',
             clientId: 'door-auth-sample',
             clientSecret: 'sample-secret-key',
-            redirectUris: 'https://localhost:7140/signin-oidc',
+            redirectUris: 'https://localhost:7140/signin-oidc,https://localhost:7140/signout-callback-oidc',
             tenantId: demoTenant.id,
             status: 'active',
         },

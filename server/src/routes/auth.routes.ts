@@ -132,4 +132,27 @@ router.post('/register', authController.register.bind(authController));
  */
 router.post('/login', authController.login.bind(authController));
 
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout and clear session
+ *     tags: [Authentication]
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Logout successful
+ */
+router.post('/logout', authController.logout.bind(authController));
+
 export default router;

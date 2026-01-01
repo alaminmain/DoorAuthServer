@@ -24,12 +24,37 @@ export class AuthController {
         httpOnly: true,
         secure: true, // Always secure for HTTPS
         sameSite: 'none', // Allow cross-site usage
+        path: '/', // Explicit path
         maxAge: 3600000 // 1 hour
       });
 
       res.status(200).json(ApiResponse.success(result, 'Login successful'));
     } catch (error: any) {
       res.status(401).json(ApiResponse.error(error.message));
+    }
+  }
+
+  async logout(req: Request, res: Response) {
+    try {
+      // Clear the access_token cookie
+      res.clearCookie('access_token', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        path: '/'
+      });
+
+      // Clear the jwt cookie (used by OAuth)
+      res.clearCookie('jwt', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        path: '/'
+      });
+
+      res.status(200).json(ApiResponse.success({}, 'Logout successful'));
+    } catch (error: any) {
+      res.status(500).json(ApiResponse.error(error.message));
     }
   }
 }

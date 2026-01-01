@@ -20,10 +20,28 @@ export const authService = {
         throw new Error(response.message || 'Registration failed');
     },
 
-    logout(): void {
+    async logout(): Promise<void> {
+        try {
+            // Step 1: Call server logout endpoint to clear server-side cookies
+            await apiService.post('/auth/logout', {});
+            console.log('[Logout] Server logout successful');
+        } catch (error) {
+            console.error('[Logout] Server logout failed:', error);
+            // Continue with client-side cleanup even if server call fails
+        }
+
+        // Step 2: Clear localStorage tokens
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        console.log('[Logout] localStorage cleared');
+
+        // Step 3: Redirect to OIDC end_session endpoint for centralized logout
+        // This ensures logout from the auth server itself and any SSO sessions
+        const endSessionUrl = new URL('/api/oauth/end_session', window.location.origin);
+        endSessionUrl.searchParams.append('post_logout_redirect_uri', window.location.origin + '/login');
+
+        console.log('[Logout] Redirecting to end_session:', endSessionUrl.toString());
+        window.location.href = endSessionUrl.toString();
     },
 
     getCurrentUser(): User | null {

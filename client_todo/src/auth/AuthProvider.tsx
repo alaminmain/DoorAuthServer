@@ -68,15 +68,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('👋 AuthProvider - Logout initiated');
 
         // Clear local token
-        AuthService.logout();
+        localStorage.removeItem('access_token');
         setUser(null);
 
         // Trigger logout event for other tabs
         localStorage.setItem('logout-event', Date.now().toString());
 
-        // Redirect to portal logout for centralized logout
-        // This will log the user out from the entire DoorAuth system
-        window.location.href = 'https://localhost:7140/logout';
+        // Redirect to DoorAuth server's end_session endpoint to clear server-side session
+        // After server logout, it will redirect back to our login page
+        const logoutUrl = new URL('https://localhost:3000/api/oauth/end_session');
+        logoutUrl.searchParams.append('post_logout_redirect_uri', window.location.origin + '/login');
+
+        console.log('🔗 Redirecting to logout URL:', logoutUrl.toString());
+        window.location.href = logoutUrl.toString();
     };
 
     // Listen for logout events from other tabs

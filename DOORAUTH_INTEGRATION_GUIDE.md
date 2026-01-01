@@ -1,415 +1,862 @@
-# DoorAuth Integration Guide - Complete Documentation
+# DoorAuth Integration Guide
+## Integrating DoorAuth SSO into VehicleManagement.Web (Blazor Server)
 
-This guide provides comprehensive documentation for integrating applications with the **DoorAuth** authentication system.
-
----
-
-## 📋 Table of Contents
-
-1. [System Overview](#system-overview)
-2. [Integration Patterns](#integration-patterns)
-3. [Documentation Index](#documentation-index)
-4. [Quick Start](#quick-start)
-5. [Example Applications](#example-applications)
+**Version**: 1.0  
+**Date**: 2026-01-01  
+**Target Application**: VehicleManagement.Web (Blazor Server .NET 9)  
+**Authentication Server**: DoorAuth (https://localhost:3000)
 
 ---
 
-## 🎯 System Overview
+## Table of Contents
 
-**DoorAuth** is a centralized authentication system that provides:
+1. [Overview](#overview)
+2. [Architecture](#architecture)
+3. [Prerequisites](#prerequisites)
+4. [Step-by-Step Integration](#step-by-step-integration)
+5. [Configuration](#configuration)
+6. [Testing](#testing)
+7. [Troubleshooting](#troubleshooting)
+8. [Best Practices](#best-practices)
 
-- **OAuth 2.0 / OpenID Connect** authentication
-- **Multi-tenant** support
-- **SSO (Single Sign-On)** across applications
-- **Role-based access control**
-- **JWT token** management
+---
 
-### Components
+## Overview
+
+This guide walks you through integrating DoorAuth SSO (Single Sign-On) authentication into the VehicleManagement.Web Blazor Server application using OpenID Connect (OIDC) protocol.
+
+### What You'll Achieve
+
+✅ **Single Sign-On**: Users log in once and access all applications  
+✅ **Centralized Authentication**: All auth logic handled by DoorAuth  
+✅ **Secure Token-Based Auth**: OAuth 2.0 + OIDC standards  
+✅ **Single Sign-Out**: Logout from one app logs out from all  
+✅ **Multi-Tenant Support**: Built-in tenant isolation
+
+---
+
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    DoorAuth Ecosystem                        │
-│                                                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │  DoorAuth    │  │ DoorAuth     │  │  Client      │     │
-│  │  Server      │  │ Sample       │  │  Apps        │     │
-│  │  (Node.js)   │  │ (ASP.NET)    │  │  (Various)   │     │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘     │
-│         │                 │                 │              │
-│         └─────────────────┴─────────────────┘              │
-│                           │                                 │
-│                  ┌────────▼────────┐                       │
-│                  │   PostgreSQL    │                       │
-│                  │   Database      │                       │
-│                  └─────────────────┘                       │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                      DoorAuth Architecture                       │
+└─────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────┐
+│   DoorAuth Server    │  ← Central Authentication Server
+│  (localhost:3000)    │     - User Management
+│                      │     - OAuth 2.0 / OIDC
+└──────────┬───────────┘     - Multi-Tenant
+           │
+           │ OAuth 2.0 / OIDC
+           │
+    ┌──────┴──────┬──────────────┬─────────────┐
+    │             │              │             │
+┌───▼────┐  ┌────▼─────┐  ┌────▼─────┐  ┌────▼─────┐
+│Vehicle │  │DoorAuth  │  │Client    │  │  Other   │
+│Mgmt Web│  │Sample    │  │Todo      │  │  Apps    │
+│:7231   │  │:7140     │  │:5175     │  │  ...     │
+└────────┘  └──────────┘  └──────────┘  └──────────┘
+```
+
+### Authentication Flow
+
+```
+User → VehicleManagement.Web → DoorAuth Server → Login Page
+                                      ↓
+                                 Authenticate
+                                      ↓
+                            Generate Auth Code
+                                      ↓
+VehicleManagement.Web ← Auth Code ← DoorAuth
+         ↓
+   Exchange Code for Token
+         ↓
+    Access Protected Resources
 ```
 
 ---
 
-## 🔄 Integration Patterns
+## Prerequisites
 
-### Pattern 1: SSO Portal Integration (Recommended)
+### 1. DoorAuth Server Running
 
-**Best for:** Internal applications, enterprise suites
+Ensure DoorAuth server is running on `https://localhost:3000`:
 
-**Flow:**
-1. User logs in to **DoorAuthSample** (central portal)
-2. Portal displays app cards for authorized applications
-3. User clicks app card
-4. App receives SSO token and auto-authenticates
-5. User accesses app without separate login
-
-**Benefits:**
-- ✅ Single login for all apps
-- ✅ Centralized access management
-- ✅ Better user experience
-- ✅ Easier to manage permissions
-
-**Documentation:**
-- `client_todo/SSO_PORTAL_INTEGRATION.md` - Complete SSO guide
-
-### Pattern 2: Direct OAuth Integration
-
-**Best for:** Standalone apps, external applications, mobile apps
-
-**Flow:**
-1. User opens application
-2. App redirects to DoorAuth login
-3. User authenticates
-4. DoorAuth redirects back with authorization code
-5. App exchanges code for access token
-6. User is authenticated
-
-**Benefits:**
-- ✅ Independent app operation
-- ✅ Standard OAuth 2.0 flow
-- ✅ Works for external apps
-- ✅ Mobile-friendly
-
-**Documentation:**
-- `client_todo/DOORAUTH_INTEGRATION_TUTORIAL.md` - OAuth PKCE guide
-
----
-
-## 📚 Documentation Index
-
-### Core Documentation
-
-| Document | Location | Description |
-|----------|----------|-------------|
-| **SSO Portal Integration** | `client_todo/SSO_PORTAL_INTEGRATION.md` | SSO pattern with DoorAuthSample |
-| **OAuth Integration Tutorial** | `client_todo/DOORAUTH_INTEGRATION_TUTORIAL.md` | Complete OAuth 2.0 PKCE guide |
-| **Quick Reference** | `client_todo/QUICK_REFERENCE.md` | Commands and troubleshooting |
-| **Architecture Guide** | `client_todo/ARCHITECTURE.md` | System diagrams and flows |
-
-### Project-Specific Guides
-
-| Project | Documentation |
-|---------|---------------|
-| **client_todo** | `client_todo/README.md` |
-| **client** | `client/README.md` |
-| **DoorAuthSample** | `DoorAuthSample/README.md` |
-| **server** | `server/README.md` |
-
----
-
-## 🚀 Quick Start
-
-### 1. Start DoorAuth Server
-
-```bash
-cd server
-npm install
+```powershell
+cd e:\Project\TestProjects\DoorAuthServer\DoorAuthServer\server
 npm run dev
 ```
 
-Server runs on: `http://localhost:3000`
+### 2. Required NuGet Packages
 
-### 2. Start DoorAuthSample Portal (Optional - for SSO)
+The following packages will be added to `VehicleManagement.Web.csproj`:
 
-```bash
-cd DoorAuthSample
-dotnet run --launch-profile "https"
-```
+- `Microsoft.AspNetCore.Authentication.OpenIdConnect` (v9.0.0)
+- `Microsoft.AspNetCore.Authentication.Cookies` (v2.2.0)
 
-Portal runs on: `https://localhost:7001`
+### 3. Application Registration in DoorAuth
 
-### 3. Start Your Application
-
-**Example: Todo App**
-```bash
-cd client_todo
-npm install
-npm run dev
-```
-
-App runs on: `http://localhost:5175`
+Your application must be registered in the DoorAuth database. We'll add this configuration.
 
 ---
 
-## 📱 Example Applications
+## Step-by-Step Integration
 
-### 1. Todo App (React + TypeScript)
+### Step 1: Register Application in DoorAuth Database
 
-**Location:** `client_todo/`
+First, we need to register the VehicleManagement.Web application in DoorAuth.
 
-**Features:**
-- OAuth 2.0 PKCE authentication
-- SSO support
-- JWT token management
-- Protected routes
+**File**: `server/prisma/seed.ts`
 
-**Documentation:** `client_todo/README.md`
+Add the following application configuration:
 
-**Integration Pattern:** Both SSO Portal and Direct OAuth
-
-### 2. Client Dashboard (React + TypeScript)
-
-**Location:** `client/`
-
-**Features:**
-- User management
-- Application management
-- Tenant management
-
-**Integration Pattern:** Direct OAuth
-
-### 3. Vehicle Management System (Blazor)
-
-**Location:** `NewVehicleManagment/VehicleManagementSystem/`
-
-**Features:**
-- Fleet management
-- Multi-tenant support
-- Authentication removed (for demo)
-
-**Integration Pattern:** Can be integrated with either pattern
-
----
-
-## 🔧 Configuration
-
-### Register Application in DoorAuth
-
-All applications must be registered in the database:
-
-```sql
-INSERT INTO "Application" (
-    id,
-    name,
-    "clientId",
-    "clientSecret",
-    "redirectUris",
-    "allowedScopes",
-    "appUrl",          -- Required for SSO Portal
-    "isActive",
-    "createdAt",
-    "updatedAt"
-) VALUES (
-    gen_random_uuid(),
-    'Your App Name',
-    'your-app-client-id',
-    'your-app-secret',
-    ARRAY['http://localhost:PORT/callback'],
-    ARRAY['openid', 'profile', 'email'],
-    'http://localhost:PORT',
-    true,
-    NOW(),
-    NOW()
-);
+```typescript
+// Vehicle Management Web Application
+{
+    clientId: 'vehicle-management-web',
+    clientSecret: 'vehicle-mgmt-secret-key-change-in-production',
+    name: 'Vehicle Management System',
+    description: 'Comprehensive vehicle fleet management system',
+    appUrl: 'https://localhost:7231',
+    redirectUris: 'https://localhost:7231/signin-oidc,https://localhost:7231/signout-callback-oidc',
+    grantTypes: 'authorization_code,refresh_token',
+    scopes: 'openid,profile,email',
+    tenantId: 1, // Default tenant
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+}
 ```
 
-### Key Configuration Fields
+**Run the seed script**:
 
-| Field | Purpose | Example |
-|-------|---------|---------|
-| `name` | Display name in portal | "Todo App" |
-| `clientId` | OAuth client identifier | "todo-app-client" |
-| `clientSecret` | OAuth client secret | "todo-secret-key" |
-| `redirectUris` | OAuth callback URLs | `['http://localhost:5175/callback']` |
-| `allowedScopes` | Permitted OAuth scopes | `['openid', 'profile', 'email']` |
-| `appUrl` | Portal launch URL | "http://localhost:5175" |
+```powershell
+cd e:\Project\TestProjects\DoorAuthServer\DoorAuthServer\server
+npx prisma db seed
+```
 
 ---
 
-## 🧪 Testing Your Integration
+### Step 2: Install Required NuGet Packages
+
+Add the OIDC authentication packages to your project:
+
+```powershell
+cd e:\Project\TestProjects\DoorAuthServer\DoorAuthServer\NewVehicleManagment\VehicleManagementSystem\VehicleManagement.Web\VehicleManagement.Web
+
+dotnet add package Microsoft.AspNetCore.Authentication.OpenIdConnect --version 9.0.0
+dotnet add package Microsoft.AspNetCore.Authentication.Cookies --version 2.2.0
+```
+
+---
+
+### Step 3: Update `Program.cs`
+
+Replace the authentication configuration in `Program.cs`:
+
+**File**: `VehicleManagement.Web/Program.cs`
+
+```csharp
+using VehicleManagement.Web.Components;
+using VehicleManagement.Web.Client.Services;
+using VehicleManagement.Shared.Interfaces;
+using Radzen;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+// ============================================================================
+// DOORAUTH SSO AUTHENTICATION CONFIGURATION
+// ============================================================================
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.Name = "VehicleManagement.Auth";
+})
+.AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+{
+    // DoorAuth Server Configuration
+    options.Authority = "https://localhost:3000";
+    options.ClientId = "vehicle-management-web";
+    options.ClientSecret = "vehicle-mgmt-secret-key-change-in-production";
+    
+    options.ResponseType = OpenIdConnectResponseType.Code;
+    options.ResponseMode = OpenIdConnectResponseMode.Query;
+    
+    options.SaveTokens = true;
+    options.GetClaimsFromUserInfoEndpoint = true;
+    
+    // Callback paths
+    options.CallbackPath = "/signin-oidc";
+    options.SignedOutCallbackPath = "/signout-callback-oidc";
+    
+    // OIDC Endpoints
+    options.MetadataAddress = "https://localhost:3000/.well-known/openid-configuration";
+    options.RequireHttpsMetadata = false; // For development only
+    
+    // Explicitly configure endpoints
+    options.Configuration = new OpenIdConnectConfiguration
+    {
+        Issuer = "https://localhost:3000",
+        AuthorizationEndpoint = "https://localhost:3000/api/oauth/authorize",
+        TokenEndpoint = "https://localhost:3000/api/oauth/token",
+        UserInfoEndpoint = "https://localhost:3000/api/oauth/userinfo",
+        EndSessionEndpoint = "https://localhost:3000/api/oauth/end_session",
+        JwksUri = "https://localhost:3000/.well-known/jwks.json"
+    };
+    
+    // Use PKCE for enhanced security
+    options.UsePkce = true;
+    
+    // Token validation (relaxed for development)
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        NameClaimType = "name",
+        RoleClaimType = "role",
+        ValidateIssuer = false, // Development only
+        ValidateAudience = false, // Development only
+        SignatureValidator = (token, parameters) => 
+            new Microsoft.IdentityModel.JsonWebTokens.JsonWebToken(token)
+    };
+    
+    // Protocol validator (relaxed for localhost)
+    options.ProtocolValidator = new OpenIdConnectProtocolValidator
+    {
+        RequireNonce = false,
+        RequireState = false,
+        RequireStateValidation = false
+    };
+    
+    // Bypass self-signed certificate errors (development only)
+    var httpClientHandler = new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = 
+            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
+    options.BackchannelHttpHandler = httpClientHandler;
+    
+    // Cookie policies for correlation
+    options.CorrelationCookie.SameSite = SameSiteMode.None;
+    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.NonceCookie.SameSite = SameSiteMode.None;
+    options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+    
+    // Event handlers for debugging
+    options.Events = new OpenIdConnectEvents
+    {
+        OnRedirectToIdentityProvider = context =>
+        {
+            Console.WriteLine($"[VehicleManagement OIDC] Redirecting to: {context.ProtocolMessage.RedirectUri}");
+            return Task.CompletedTask;
+        },
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"[VehicleManagement OIDC] Auth Failed: {context.Exception.Message}");
+            return Task.CompletedTask;
+        },
+        OnTicketReceived = context =>
+        {
+            Console.WriteLine($"[VehicleManagement OIDC] Ticket Received. User: {context.Principal?.Identity?.Name}");
+            return Task.CompletedTask;
+        },
+        OnRemoteFailure = context =>
+        {
+            Console.WriteLine($"[VehicleManagement OIDC] Remote Failure: {context.Failure?.Message}");
+            context.Response.Redirect("/");
+            context.HandleResponse();
+            return Task.CompletedTask;
+        }
+    };
+});
+
+// ============================================================================
+// END DOORAUTH CONFIGURATION
+// ============================================================================
+
+// Register HttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
+// Register authenticated HTTP client handler
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7281")
+});
+
+// Register services
+builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<ITenantService, TenantService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IDriverService, DriverService>();
+builder.Services.AddScoped<ILegalCaseService, LegalCaseService>();
+builder.Services.AddScoped<IMaintenanceLogService, MaintenanceLogService>();
+builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
+builder.Services.AddScoped<ITripService, TripService>();
+builder.Services.AddScoped<IDriverDayOffService, DriverDayOffService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
+
+// Add Radzen services
+builder.Services.AddScoped<DialogService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<TooltipService>();
+builder.Services.AddScoped<ContextMenuService>();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseWebAssemblyDebugging();
+}
+else
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+
+// ============================================================================
+// AUTHENTICATION MIDDLEWARE (IMPORTANT ORDER!)
+// ============================================================================
+app.UseAuthentication(); // Must come before UseAuthorization
+app.UseAuthorization();
+// ============================================================================
+
+app.UseAntiforgery();
+
+// ============================================================================
+// AUTHENTICATION ENDPOINTS
+// ============================================================================
+
+// Login endpoint
+app.MapGet("/login", (HttpContext context) =>
+{
+    return Results.Challenge(
+        new AuthenticationProperties { RedirectUri = "/" },
+        authenticationSchemes: new List<string> { OpenIdConnectDefaults.AuthenticationScheme }
+    );
+});
+
+// Logout endpoint
+app.MapGet("/logout", async (HttpContext context) =>
+{
+    // Sign out from both cookie and OIDC schemes
+    // This clears local cookies AND redirects to DoorAuth end_session
+    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, 
+        new AuthenticationProperties
+        {
+            RedirectUri = "/"
+        });
+});
+
+// ============================================================================
+
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
+    .AddAdditionalAssemblies(
+        typeof(VehicleManagement.Web.Client._Imports).Assembly,
+        typeof(VehicleManagement.UI.Layout.MainLayout).Assembly);
+
+app.Run();
+```
+
+---
+
+### Step 4: Update `appsettings.json`
+
+Add DoorAuth configuration:
+
+**File**: `VehicleManagement.Web/appsettings.json`
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.AspNetCore.Authentication": "Debug"
+    }
+  },
+  "AllowedHosts": "*",
+  "ApiBaseUrl": "https://localhost:7281",
+  "DoorAuth": {
+    "Authority": "https://localhost:3000",
+    "ClientId": "vehicle-management-web",
+    "ClientSecret": "vehicle-mgmt-secret-key-change-in-production",
+    "Scopes": "openid profile email"
+  }
+}
+```
+
+---
+
+### Step 5: Create Login Page Component
+
+Create a login page for unauthenticated users:
+
+**File**: `VehicleManagement.Web/Components/Pages/Login.razor`
+
+```razor
+@page "/login"
+@inject NavigationManager Navigation
+
+<PageTitle>Login - Vehicle Management</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>🚗 Vehicle Management System</h1>
+            <p>Please sign in to continue</p>
+        </div>
+        
+        <div class="login-body">
+            <button class="btn-login" @onclick="SignIn">
+                <span class="icon">🔐</span>
+                Sign In with DoorAuth
+            </button>
+        </div>
+        
+        <div class="login-footer">
+            <p>Secure authentication powered by DoorAuth</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void SignIn()
+    {
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}
+
+<style>
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        padding: 48px;
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .login-header h1 {
+        font-size: 28px;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    
+    .login-header p {
+        color: #666;
+        margin-bottom: 32px;
+    }
+    
+    .btn-login {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 16px 32px;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-login .icon {
+        font-size: 24px;
+    }
+    
+    .login-footer {
+        margin-top: 32px;
+        color: #999;
+        font-size: 14px;
+    }
+</style>
+```
+
+---
+
+### Step 6: Update Main Layout with Authentication
+
+Update your main layout to show user info and logout button:
+
+**File**: `VehicleManagement.UI/Layout/MainLayout.razor` (or wherever your layout is)
+
+Add this to the top bar:
+
+```razor
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView>
+    <Authorized>
+        <div class="user-info">
+            <span>Welcome, @context.User.Identity?.Name</span>
+            <button class="btn-logout" @onclick="Logout">
+                Logout
+            </button>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <button class="btn-login" @onclick="Login">
+            Sign In
+        </button>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+    
+    private void Login()
+    {
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+    
+    private void Logout()
+    {
+        Navigation.NavigateTo("/logout", forceLoad: true);
+    }
+}
+```
+
+---
+
+### Step 7: Protect Pages with `[Authorize]`
+
+Add the `[Authorize]` attribute to pages that require authentication:
+
+```razor
+@page "/vehicles"
+@attribute [Authorize]
+
+<PageTitle>Vehicles</PageTitle>
+
+<!-- Your page content -->
+```
+
+---
+
+### Step 8: Add CascadingAuthenticationState
+
+Update your `App.razor` to provide authentication state:
+
+**File**: `VehicleManagement.Web/Components/App.razor`
+
+```razor
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="VehicleManagement.Web.styles.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet />
+</head>
+
+<body>
+    <CascadingAuthenticationState>
+        <Routes />
+    </CascadingAuthenticationState>
+    
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+```
+
+---
+
+## Configuration
+
+### Environment-Specific Settings
+
+**Development** (`appsettings.Development.json`):
+```json
+{
+  "DoorAuth": {
+    "Authority": "https://localhost:3000",
+    "RequireHttpsMetadata": false
+  }
+}
+```
+
+**Production** (`appsettings.Production.json`):
+```json
+{
+  "DoorAuth": {
+    "Authority": "https://auth.yourdomain.com",
+    "RequireHttpsMetadata": true,
+    "ClientSecret": "USE-ENVIRONMENT-VARIABLE-IN-PRODUCTION"
+  }
+}
+```
+
+### Security Best Practices
+
+1. **Never commit secrets** - Use environment variables or Azure Key Vault
+2. **Enable HTTPS** - Always use HTTPS in production
+3. **Validate tokens** - Enable issuer and audience validation in production
+4. **Use strong secrets** - Generate cryptographically secure client secrets
+5. **Implement PKCE** - Already enabled (`options.UsePkce = true`)
+
+---
+
+## Testing
 
 ### Test Checklist
 
-- [ ] DoorAuth server is running
-- [ ] Application is registered in database
-- [ ] Configuration matches database entries
-- [ ] CORS is configured correctly
-- [ ] Redirect URIs match exactly
+- [ ] **Step 1**: Start DoorAuth server (`npm run dev` in `server/`)
+- [ ] **Step 2**: Start VehicleManagement.Web (`dotnet run`)
+- [ ] **Step 3**: Navigate to `https://localhost:7231`
+- [ ] **Step 4**: Click "Sign In with DoorAuth"
+- [ ] **Step 5**: Redirected to DoorAuth login page
+- [ ] **Step 6**: Enter credentials (e.g., `bd@gmail.com` / `1q2w3E*`)
+- [ ] **Step 7**: Redirected back to VehicleManagement.Web
+- [ ] **Step 8**: See welcome message with username
+- [ ] **Step 9**: Access protected pages
+- [ ] **Step 10**: Click "Logout"
+- [ ] **Step 11**: Verify logout from all apps (SSO logout)
 
-### Test SSO Portal Flow
+### Test Scenarios
 
-1. Start DoorAuth server
-2. Start DoorAuthSample portal
-3. Start your application
-4. Login to portal at `https://localhost:7001`
-5. Verify app card appears
-6. Click app card
-7. Verify automatic login to app
-
-### Test Direct OAuth Flow
-
-1. Start DoorAuth server
-2. Start your application
-3. Navigate to your app
-4. Click login
-5. Enter credentials on DoorAuth page
-6. Verify redirect to callback
-7. Verify successful authentication
-
----
-
-## 🐛 Common Issues
-
-### Issue: "Invalid redirect_uri"
-
-**Cause:** Redirect URI doesn't match database entry
-
-**Solution:**
-```sql
--- Check current redirect URIs
-SELECT "redirectUris" FROM "Application" WHERE "clientId" = 'your-client-id';
-
--- Update if needed
-UPDATE "Application" 
-SET "redirectUris" = ARRAY['http://localhost:5175/callback']
-WHERE "clientId" = 'your-client-id';
+#### Scenario 1: First-Time Login
+```
+1. User visits https://localhost:7231
+2. Not authenticated → Redirected to /login
+3. Clicks "Sign In with DoorAuth"
+4. Redirected to https://localhost:3000/api/oauth/authorize
+5. DoorAuth shows login form
+6. User enters credentials
+7. DoorAuth generates authorization code
+8. Redirects to https://localhost:7231/signin-oidc?code=...
+9. VehicleManagement.Web exchanges code for token
+10. User authenticated → Redirected to dashboard
 ```
 
-### Issue: CORS Errors
-
-**Cause:** App URL not in CORS whitelist
-
-**Solution:** Add to `server/src/index.ts`:
-```typescript
-app.use(cors({
-    origin: [
-        'http://localhost:5175',  // Your app URL
-        'https://localhost:7001', // Portal URL
-        // Add other URLs
-    ],
-    credentials: true
-}));
+#### Scenario 2: SSO Login
+```
+1. User already logged into DoorAuthSample
+2. Visits https://localhost:7231
+3. Redirected to DoorAuth
+4. DoorAuth detects existing session
+5. Auto-redirects back with auth code (no login form!)
+6. User authenticated immediately
 ```
 
-### Issue: Token Expired
-
-**Cause:** JWT token has expired
-
-**Solution:** App should auto-detect and redirect to login. If not, clear localStorage and login again.
-
-### Issue: App Card Not Showing in Portal
-
-**Cause:** `appUrl` not set in database
-
-**Solution:**
-```sql
-UPDATE "Application" 
-SET "appUrl" = 'http://localhost:5175'
-WHERE "clientId" = 'your-client-id';
+#### Scenario 3: Logout
+```
+1. User clicks "Logout"
+2. VehicleManagement.Web calls SignOutAsync
+3. Redirected to https://localhost:3000/api/oauth/end_session
+4. DoorAuth clears all cookies
+5. Redirected back to VehicleManagement.Web
+6. User logged out
+7. Try accessing DoorAuthSample → Must login again (SSO logout!)
 ```
 
 ---
 
-## 🔐 Security Best Practices
+## Troubleshooting
 
-### For Development
+### Common Issues
 
-- ✅ Use PKCE for OAuth flows
-- ✅ Validate JWT tokens
-- ✅ Check token expiry
-- ✅ Use HTTPS for DoorAuthSample
-- ✅ Store tokens securely
+#### Issue 1: "Correlation failed" Error
 
-### For Production
+**Cause**: Cookie SameSite policy mismatch
 
-- ✅ Use HTTPS for all services
-- ✅ Store secrets in environment variables
-- ✅ Implement refresh tokens
-- ✅ Add rate limiting
-- ✅ Enable CSRF protection
-- ✅ Use secure cookie settings
-- ✅ Implement proper logging
-- ✅ Add monitoring and alerts
+**Solution**: Ensure cookies have `SameSite=None` and `Secure=true`:
+```csharp
+options.CorrelationCookie.SameSite = SameSiteMode.None;
+options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+```
 
----
+#### Issue 2: "Cannot redirect to the end session endpoint"
 
-## 📖 Additional Resources
+**Cause**: `EndSessionEndpoint` not configured
 
-### OAuth 2.0 & OpenID Connect
+**Solution**: Explicitly set the endpoint:
+```csharp
+options.Configuration = new OpenIdConnectConfiguration
+{
+    EndSessionEndpoint = "https://localhost:3000/api/oauth/end_session"
+};
+```
 
-- [OAuth 2.0 Specification](https://oauth.net/2/)
-- [OpenID Connect](https://openid.net/connect/)
-- [PKCE RFC](https://oauth.net/2/pkce/)
-- [JWT.io - Token Decoder](https://jwt.io)
+#### Issue 3: Self-Signed Certificate Errors
 
-### Frameworks & Libraries
+**Cause**: HTTPS with self-signed certs in development
 
-- [React](https://react.dev)
-- [ASP.NET Core](https://docs.microsoft.com/aspnet/core)
-- [Prisma](https://www.prisma.io)
-- [Express.js](https://expressjs.com)
+**Solution**: Bypass validation (development only):
+```csharp
+var httpClientHandler = new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = 
+        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+};
+options.BackchannelHttpHandler = httpClientHandler;
+```
 
----
+#### Issue 4: "invalid_grant" Error
 
-## 🎓 Learning Path
+**Cause**: Client secret mismatch or expired code
 
-### For Beginners
+**Solution**: 
+1. Verify `ClientSecret` matches database
+2. Check authorization code hasn't expired (5 minutes)
+3. Ensure PKCE is enabled
 
-1. Read `client_todo/ARCHITECTURE.md` - Understand the system
-2. Follow `client_todo/DOORAUTH_INTEGRATION_TUTORIAL.md` - Learn OAuth
-3. Try `client_todo/QUICK_REFERENCE.md` - Practice commands
+#### Issue 5: User Not Authenticated After Redirect
 
-### For Integration
+**Cause**: Missing `UseAuthentication()` middleware
 
-1. Read `client_todo/SSO_PORTAL_INTEGRATION.md` - Understand SSO pattern
-2. Register your app in database
-3. Implement token reception in your app
-4. Test with DoorAuthSample portal
+**Solution**: Add middleware in correct order:
+```csharp
+app.UseAuthentication(); // Before UseAuthorization!
+app.UseAuthorization();
+```
 
-### For Advanced Users
+### Debug Logging
 
-1. Implement refresh tokens
-2. Add role-based access control
-3. Customize token claims
-4. Implement multi-tenant support
+Enable detailed logging in `appsettings.Development.json`:
 
----
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Microsoft.AspNetCore.Authentication": "Debug",
+      "Microsoft.AspNetCore.Authentication.OpenIdConnect": "Trace"
+    }
+  }
+}
+```
 
-## 🤝 Support & Contribution
+### Browser DevTools
 
-### Getting Help
-
-1. Check the documentation files
-2. Review example applications
-3. Check DoorAuth server logs
-4. Verify database configuration
-5. Test with browser DevTools
-
-### Contributing
-
-When adding new applications:
-1. Register in database with all required fields
-2. Implement proper token handling
-3. Add documentation
-4. Test both integration patterns
-5. Update this guide
-
----
-
-## 📝 Version History
-
-- **v2.0** (2025-12-30) - Added SSO Portal pattern, comprehensive docs
-- **v1.0** (2024-12-24) - Initial OAuth integration
+1. **Check Cookies**: Application → Cookies → `https://localhost:7231`
+   - Look for `.AspNetCore.Cookies` and correlation cookies
+   
+2. **Check Network**: Network tab → Filter by "authorize", "token", "userinfo"
+   - Verify requests to DoorAuth endpoints
+   
+3. **Check Console**: Look for OIDC event logs
 
 ---
 
-**Maintained by:** DoorAuth Team  
-**Last Updated:** 2025-12-30  
-**License:** Internal Use
+## Best Practices
+
+### 1. Security
+
+✅ **Use PKCE**: Already enabled (`options.UsePkce = true`)  
+✅ **HTTPS Only**: Always use HTTPS in production  
+✅ **Secure Cookies**: `HttpOnly`, `Secure`, `SameSite=None`  
+✅ **Token Validation**: Enable in production  
+✅ **Secret Management**: Use environment variables or Key Vault
+
+### 2. User Experience
+
+✅ **Auto-Redirect**: Redirect unauthenticated users to login  
+✅ **SSO**: Leverage existing DoorAuth sessions  
+✅ **Logout Confirmation**: Consider adding confirmation dialog  
+✅ **Session Timeout**: Implement automatic logout after inactivity
+
+### 3. Error Handling
+
+✅ **Graceful Failures**: Handle auth errors gracefully  
+✅ **User-Friendly Messages**: Show helpful error messages  
+✅ **Logging**: Log all auth events for debugging  
+✅ **Fallback**: Provide fallback for auth failures
+
+### 4. Performance
+
+✅ **Token Caching**: Tokens are cached by default  
+✅ **Minimize Redirects**: Use SSO to avoid repeated logins  
+✅ **Async Operations**: All auth operations are async
+
+---
+
+## Next Steps
+
+After successful integration:
+
+1. **Add Role-Based Authorization**: Use `[Authorize(Roles = "Admin")]`
+2. **Implement Claims-Based Auth**: Access user claims for personalization
+3. **Add Tenant Isolation**: Use `tenantId` claim for multi-tenancy
+4. **Implement Refresh Tokens**: For long-lived sessions
+5. **Add Audit Logging**: Track all authentication events
+6. **Configure Production**: Update settings for production deployment
+
+---
+
+## Summary
+
+You've successfully integrated DoorAuth SSO into VehicleManagement.Web! 🎉
+
+**What You Accomplished**:
+- ✅ Configured OIDC authentication
+- ✅ Implemented SSO login
+- ✅ Added SSO logout
+- ✅ Protected routes with `[Authorize]`
+- ✅ Created user-friendly login page
+
+**Key Files Modified**:
+1. `Program.cs` - Authentication configuration
+2. `appsettings.json` - DoorAuth settings
+3. `Components/Pages/Login.razor` - Login page
+4. `Components/App.razor` - Authentication state provider
+
+**Testing**:
+- Navigate to `https://localhost:7231`
+- Click "Sign In with DoorAuth"
+- Login with DoorAuth credentials
+- Access protected pages
+- Test SSO with other apps
+- Test logout (single sign-out)
+
+For questions or issues, refer to the [Troubleshooting](#troubleshooting) section or check the DoorAuthSample implementation for reference.
+
+---
+
+**Document Version**: 1.0  
+**Last Updated**: 2026-01-01  
+**Author**: DoorAuth Integration Team
