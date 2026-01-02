@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DoorAuthSample")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4bd6191c145df00c35e6ac5423a2c750b762681e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+637aaa8a528197edc871ea772dfc81f635710597")]
 [assembly: System.Reflection.AssemblyProductAttribute("DoorAuthSample")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DoorAuthSample")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

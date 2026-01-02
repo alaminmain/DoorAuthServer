@@ -188,6 +188,7 @@ async function main() {
     const vehicleApp = await prisma.application.upsert({
         where: { clientId: 'vehicle-management-web' },
         update: {
+            appUrl: 'https://localhost:7231',
             redirectUris: 'https://localhost:7231/signin-oidc,https://localhost:7231/signout-callback-oidc,https://localhost:7140/signout-callback-oidc',
         },
         create: {
@@ -196,6 +197,7 @@ async function main() {
             clientId: 'vehicle-management-web',
             clientSecret: 'vehicle-secret-key',
             redirectUris: 'https://localhost:7231/signin-oidc,https://localhost:7231/signout-callback-oidc,https://localhost:7140/signout-callback-oidc', // Comma separated if multiple
+            appUrl: 'https://localhost:7231',
             tenantId: demoTenant.id,
             status: 'active',
         },
