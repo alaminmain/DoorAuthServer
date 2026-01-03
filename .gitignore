@@ -5,3 +5,11 @@ build
 .DS_Store
 coverage
 .vscode
+
+# .NET
+[Bb]in/
+[Oo]bj/
+.dotnet/
+dotnet/
+*.user
+*.suo

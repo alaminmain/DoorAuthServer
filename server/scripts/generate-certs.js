@@ -22,6 +22,31 @@ if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
 console.log('🔐 Generating self-signed SSL certificates...');
 console.log('');
 
+// Try to use mkcert first (for trusted certs)
+try {
+    const mkcertCheck = execSync('mkcert -help', { stdio: 'ignore' });
+    console.log('✨ mkcert found! Generating trusted certificates...');
+
+    // Install local CA if needed (might require admin, but usually harmless to try)
+    // execSync('mkcert -install', { stdio: 'inherit' }); 
+    // Commented out install to avoid interactive prompts/admin issues in script, assume user did it or does it manually.
+
+    const command = `mkcert -key-file "${keyPath}" -cert-file "${certPath}" localhost 127.0.0.1 ::1`;
+    execSync(command, { stdio: 'inherit' });
+
+    console.log('');
+    console.log('✅ Trusted SSL certificates generated successfully!');
+    console.log('   📁 Location: certs/');
+    console.log('   🔑 Private Key: key.pem');
+    console.log('   📜 Certificate: cert.pem');
+    console.log('');
+    console.log('👉 Note: You might need to restart your servers to apply changes.');
+    process.exit(0);
+
+} catch (e) {
+    console.log('⚠️ mkcert not found, falling back to OpenSSL (self-signed)...');
+}
+
 // Try to find OpenSSL
 let opensslCommand = 'openssl';
 try {
@@ -38,7 +63,10 @@ try {
     } catch (e2) {
         console.log('❌ OpenSSL not found.');
         console.log('');
-        console.log('Please install OpenSSL or use one of these options:');
+        console.log('Please install OpenSSL or mkcert (recommended for trusted HTTPS).');
+        console.log('To install mkcert on Windows: choco install mkcert');
+        console.log('');
+        console.log('Or use one of these options for OpenSSL:');
         console.log('1. Install Git for Windows (includes OpenSSL)');
         console.log('2. Install OpenSSL from https://slproweb.com/products/Win32OpenSSL.html');
         console.log('3. Manually create certificates and place them in the certs/ folder');
@@ -60,8 +88,8 @@ try {
     console.log('   🔑 Private Key: key.pem');
     console.log('   📜 Certificate: cert.pem');
     console.log('');
-    console.log('⚠️  Note: These are self-signed certificates for development only.');
-    console.log('   You may need to trust them in your browser.');
+    console.log('⚠️  Note: These are self-signed certificates (OpenSSL). Browser will warn.');
+    console.log('   For trusted certificates, install mkcert.');
 
 } catch (error) {
     console.log('');
