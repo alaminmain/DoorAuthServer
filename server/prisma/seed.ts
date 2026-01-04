@@ -184,7 +184,13 @@ async function main() {
     });
     console.log('Assigned Todo User Role to Standard User');
 
-    // 10. Create Vehicle Management Web Application
+    // ========================================
+    // 10. VEHICLE MANAGEMENT SYSTEM - RBAC SETUP
+    // ========================================
+
+    console.log('\n--- Setting up Vehicle Management System ---');
+
+    // 10.1 Create Vehicle Management Web Application
     const vehicleApp = await prisma.application.upsert({
         where: { clientId: 'vehicle-management-web' },
         update: {
@@ -193,52 +199,247 @@ async function main() {
         },
         create: {
             name: 'Vehicle Management System',
-            description: 'Vehicle Management Web Application',
+            description: 'Comprehensive Fleet Management Application',
             clientId: 'vehicle-management-web',
             clientSecret: 'vehicle-secret-key',
-            redirectUris: 'https://localhost:7231/signin-oidc,https://localhost:7231/signout-callback-oidc,https://localhost:7140/signout-callback-oidc', // Comma separated if multiple
+            redirectUris: 'https://localhost:7231/signin-oidc,https://localhost:7231/signout-callback-oidc,https://localhost:7140/signout-callback-oidc',
             appUrl: 'https://localhost:7231',
             tenantId: demoTenant.id,
             status: 'active',
         },
     });
+    console.log(`✓ Created App: ${vehicleApp.name} (${vehicleApp.id})`);
 
-    console.log(`Created App: ${vehicleApp.name} (${vehicleApp.id})`);
-
-    // 11. Create 'Vehicle User' Role
-    const vehicleUserRole = await prisma.role.upsert({
+    // 10.2 Create 'Owner' Role (Full Access)
+    const ownerRole = await prisma.role.upsert({
         where: {
             tenantId_name: {
                 tenantId: demoTenant.id,
-                name: 'Vehicle User',
+                name: 'Owner',
             },
         },
         update: {},
         create: {
-            name: 'Vehicle User',
-            description: 'User for Vehicle Management System',
+            name: 'Owner',
+            description: 'Full access to all Vehicle Management features',
             isSystem: false,
             tenantId: demoTenant.id,
             applicationId: vehicleApp.id,
         },
     });
-    console.log(`Created Role: ${vehicleUserRole.name}`);
+    console.log(`✓ Created Role: ${ownerRole.name}`);
 
-    // 12. Assign Vehicle User Role to Standard User
-    await prisma.userRole.upsert({
+    // 10.3 Create 'ManagementStaff' Role (Limited Access)
+    const managementStaffRole = await prisma.role.upsert({
         where: {
-            userId_roleId: {
-                userId: standardUser.id,
-                roleId: vehicleUserRole.id,
+            tenantId_name: {
+                tenantId: demoTenant.id,
+                name: 'ManagementStaff',
             },
         },
         update: {},
         create: {
-            userId: standardUser.id,
-            roleId: vehicleUserRole.id,
+            name: 'ManagementStaff',
+            description: 'Limited access to Drivers, Vehicles, and Bookings only',
+            isSystem: false,
+            tenantId: demoTenant.id,
+            applicationId: vehicleApp.id,
         },
     });
-    console.log('Assigned Vehicle User Role to Standard User');
+    console.log(`✓ Created Role: ${managementStaffRole.name}`);
+
+    // 10.4 Define Permissions for Owner Role (Full Access)
+    const ownerPermissions = [
+        { resource: 'dashboard', action: 'read' },
+        { resource: 'vehicles', action: 'read' },
+        { resource: 'vehicles', action: 'write' },
+        { resource: 'drivers', action: 'read' },
+        { resource: 'drivers', action: 'write' },
+        { resource: 'bookings', action: 'read' },
+        { resource: 'bookings', action: 'write' },
+        { resource: 'customers', action: 'read' },
+        { resource: 'customers', action: 'write' },
+        { resource: 'legalcases', action: 'read' },
+        { resource: 'legalcases', action: 'write' },
+        { resource: 'maintenance', action: 'read' },
+        { resource: 'maintenance', action: 'write' },
+        { resource: 'settings', action: 'read' },
+        { resource: 'settings', action: 'write' },
+        { resource: 'tenants', action: 'read' },
+        { resource: 'tenants', action: 'write' },
+    ];
+
+    for (const perm of ownerPermissions) {
+        await prisma.permission.upsert({
+            where: {
+                roleId_resource_action: {
+                    roleId: ownerRole.id,
+                    resource: perm.resource,
+                    action: perm.action,
+                },
+            },
+            update: {},
+            create: {
+                roleId: ownerRole.id,
+                resource: perm.resource,
+                action: perm.action,
+            },
+        });
+    }
+    console.log(`✓ Created ${ownerPermissions.length} permissions for Owner role`);
+
+    // 10.5 Define Permissions for ManagementStaff Role (Limited Access)
+    const staffPermissions = [
+        { resource: 'dashboard', action: 'read' },
+        { resource: 'vehicles', action: 'read' },
+        { resource: 'drivers', action: 'read' },
+        { resource: 'bookings', action: 'read' },
+        { resource: 'bookings', action: 'write' },
+    ];
+
+    for (const perm of staffPermissions) {
+        await prisma.permission.upsert({
+            where: {
+                roleId_resource_action: {
+                    roleId: managementStaffRole.id,
+                    resource: perm.resource,
+                    action: perm.action,
+                },
+            },
+            update: {},
+            create: {
+                roleId: managementStaffRole.id,
+                resource: perm.resource,
+                action: perm.action,
+            },
+        });
+    }
+    console.log(`✓ Created ${staffPermissions.length} permissions for ManagementStaff role`);
+
+    // 10.6 Create Menu Items for Vehicle Management System
+    const menuItems = [
+        { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', order: 1, requiredPermission: 'dashboard:read', parentId: null },
+        { label: 'Vehicles', path: '/vehicles', icon: 'directions_car', order: 2, requiredPermission: 'vehicles:read', parentId: null },
+        { label: 'Drivers', path: '/drivers', icon: 'person', order: 3, requiredPermission: 'drivers:read', parentId: null },
+        { label: 'Bookings', path: '/bookings', icon: 'book_online', order: 4, requiredPermission: 'bookings:read', parentId: null },
+        { label: 'Customers', path: '/customers', icon: 'people', order: 5, requiredPermission: 'customers:read', parentId: null },
+        { label: 'Legal Cases', path: '/legalcases', icon: 'gavel', order: 6, requiredPermission: 'legalcases:read', parentId: null },
+        { label: 'Maintenance', path: '/maintenance', icon: 'build', order: 7, requiredPermission: 'maintenance:read', parentId: null },
+        { label: 'Settings', path: '/settings', icon: 'settings', order: 8, requiredPermission: 'settings:read', parentId: null },
+        { label: 'Tenants', path: '/tenants', icon: 'business', order: 9, requiredPermission: 'tenants:read', parentId: null },
+    ];
+
+    for (const menu of menuItems) {
+        await prisma.menu.upsert({
+            where: {
+                id: `${vehicleApp.id}-${menu.path}`,
+            },
+            update: {},
+            create: {
+                id: `${vehicleApp.id}-${menu.path}`,
+                label: menu.label,
+                path: menu.path,
+                icon: menu.icon,
+                order: menu.order,
+                requiredPermission: menu.requiredPermission,
+                applicationId: vehicleApp.id,
+                parentId: menu.parentId,
+            },
+        });
+    }
+    console.log(`✓ Created ${menuItems.length} menu items for Vehicle Management`);
+
+    // 10.7 Create Owner User
+    const ownerUser = await prisma.user.upsert({
+        where: {
+            tenantId_email: {
+                tenantId: demoTenant.id,
+                email: 'owner@vehicle.com',
+            },
+        },
+        update: {},
+        create: {
+            email: 'owner@vehicle.com',
+            loginId: 'owner@vehicle.com',
+            userName: 'Fleet Owner',
+            passwordHash,
+            tenantId: demoTenant.id,
+            isApproved: true,
+            designation: 'Owner & CEO',
+            companyName: 'Premium Fleet Services',
+        },
+    });
+    console.log(`✓ Created Owner User: ${ownerUser.email} (Password: password123)`);
+
+    // 10.8 Assign Owner Role to Owner User
+    await prisma.userRole.upsert({
+        where: {
+            userId_roleId: {
+                userId: ownerUser.id,
+                roleId: ownerRole.id,
+            },
+        },
+        update: {},
+        create: {
+            userId: ownerUser.id,
+            roleId: ownerRole.id,
+        },
+    });
+    console.log(`✓ Assigned Owner role to ${ownerUser.email}`);
+
+    // 10.9 Create 5 ManagementStaff Users
+    const staffUsers = [
+        { email: 'staff1@vehicle.com', name: 'Ahmed Rahman', designation: 'Operations Manager' },
+        { email: 'staff2@vehicle.com', name: 'Fatima Khan', designation: 'Fleet Coordinator' },
+        { email: 'staff3@vehicle.com', name: 'Karim Hassan', designation: 'Booking Specialist' },
+        { email: 'staff4@vehicle.com', name: 'Nadia Islam', designation: 'Customer Relations' },
+        { email: 'staff5@vehicle.com', name: 'Tariq Ahmed', designation: 'Fleet Supervisor' },
+    ];
+
+    for (const staff of staffUsers) {
+        const staffUser = await prisma.user.upsert({
+            where: {
+                tenantId_email: {
+                    tenantId: demoTenant.id,
+                    email: staff.email,
+                },
+            },
+            update: {},
+            create: {
+                email: staff.email,
+                loginId: staff.email,
+                userName: staff.name,
+                passwordHash,
+                tenantId: demoTenant.id,
+                isApproved: true,
+                designation: staff.designation,
+                companyName: 'Premium Fleet Services',
+            },
+        });
+
+        // Assign ManagementStaff Role
+        await prisma.userRole.upsert({
+            where: {
+                userId_roleId: {
+                    userId: staffUser.id,
+                    roleId: managementStaffRole.id,
+                },
+            },
+            update: {},
+            create: {
+                userId: staffUser.id,
+                roleId: managementStaffRole.id,
+            },
+        });
+
+        console.log(`✓ Created Staff User: ${staffUser.email} with ManagementStaff role`);
+    }
+
+    console.log('\n✓ Vehicle Management System RBAC setup completed!');
+    console.log(`  - 1 Owner user (full access)`);
+    console.log(`  - 5 ManagementStaff users (limited access)`);
+    console.log(`  - 2 Roles with granular permissions`);
+    console.log(`  - 9 Menu items configured\n`);
 
 
     // 13. Create DoorAuthSample Application
@@ -262,21 +463,22 @@ async function main() {
     // 14. Assign 'Sample User' Role (re-use Vehicle User role logic or just link it)
     // For simplicity, we just need the client to exist. The user 'user@demo.localhost' can login.
 
-    // 15. Assign 'Vehicle User' role to Admin (So Admin can see it in Dashboard)
+    // 15. Assign 'Owner' role to Admin (So Admin can see Vehicle Management in Dashboard)
     await prisma.userRole.upsert({
         where: {
             userId_roleId: {
                 userId: adminUser.id,
-                roleId: vehicleUserRole.id,
+                roleId: ownerRole.id,
             },
         },
         update: {},
         create: {
             userId: adminUser.id,
-            roleId: vehicleUserRole.id,
+            roleId: ownerRole.id,
         },
     });
-    console.log('Assigned Vehicle User Role to Admin User');
+    console.log('✓ Assigned Owner role to Admin User for Vehicle Management access');
+
 
     console.log('Seeding finished.');
 }
