@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { ToastProvider } from './contexts/ToastContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 
@@ -17,32 +18,34 @@ import UserRoles from './pages/UserRoles';
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/login" element={<Login />} />
+      <ToastProvider>
+        <AuthProvider>
+          <Router>
+            <Routes>
+              <Route path="/login" element={<Login />} />
 
-            <Route path="/" element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Dashboard />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<Dashboard />} />
 
-              {/* Placeholders for future routes */}
-              <Route path="tenants" element={<Tenants />} />
-              <Route path="applications" element={<Applications />} />
-              <Route path="roles" element={<Roles />} />
-              <Route path="menus" element={<Menus />} />
-              <Route path="users" element={<Users />} />
-              <Route path="user-roles" element={<UserRoles />} />
-              <Route path="settings" element={<div className="p-4">Settings (Coming Soon)</div>} />
+                {/* Placeholders for future routes */}
+                <Route path="tenants" element={<Tenants />} />
+                <Route path="applications" element={<Applications />} />
+                <Route path="roles" element={<Roles />} />
+                <Route path="menus" element={<Menus />} />
+                <Route path="users" element={<Users />} />
+                <Route path="user-roles" element={<UserRoles />} />
+                <Route path="settings" element={<div className="p-4">Settings (Coming Soon)</div>} />
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-          </Routes>
-        </Router>
-      </AuthProvider>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+            </Routes>
+          </Router>
+        </AuthProvider>
+      </ToastProvider>
     </ThemeProvider>
   );
 }

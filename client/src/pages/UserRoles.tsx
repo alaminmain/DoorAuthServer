@@ -6,6 +6,8 @@ import type { User, Role } from '../types';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import apiService from '../services/api';
+import { useToast } from '../contexts/ToastContext';
+import { confirmDialog } from '../utils/sweetalert';
 
 export default function UserRoles() {
     const [users, setUsers] = useState<User[]>([]);
@@ -16,7 +18,8 @@ export default function UserRoles() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
+
+    const toast = useToast();
 
     useEffect(() => {
         fetchData();
@@ -52,7 +55,6 @@ export default function UserRoles() {
         setSelectedUser(user);
         fetchUserRoles(user.id);
         setError(null);
-        setSuccess(null);
     };
 
     const handleAssignRole = async (roleId: string) => {
@@ -63,10 +65,10 @@ export default function UserRoles() {
             setError(null);
             await apiService.post(`/users/${selectedUser.id}/roles`, { roleId });
             await fetchUserRoles(selectedUser.id);
-            setSuccess('Role assigned successfully');
-            setTimeout(() => setSuccess(null), 3000);
+            toast.success('Role assigned successfully');
         } catch (err: any) {
             setError(err.message || 'Failed to assign role');
+            toast.error(err.message || 'Failed to assign role');
         } finally {
             setIsSubmitting(false);
         }
@@ -74,17 +76,24 @@ export default function UserRoles() {
 
     const handleRemoveRole = async (roleId: string) => {
         if (!selectedUser) return;
-        if (!window.confirm('Are you sure you want to remove this role from the user?')) return;
+
+        const confirmed = await confirmDialog(
+            'Remove Role?',
+            'Are you sure you want to remove this role from the user?',
+            'Yes, remove',
+            'Cancel'
+        );
+        if (!confirmed) return;
 
         try {
             setIsSubmitting(true);
             setError(null);
             await apiService.delete(`/users/${selectedUser.id}/roles/${roleId}`);
             await fetchUserRoles(selectedUser.id);
-            setSuccess('Role removed successfully');
-            setTimeout(() => setSuccess(null), 3000);
+            toast.success('Role removed successfully');
         } catch (err: any) {
             setError(err.message || 'Failed to remove role');
+            toast.error(err.message || 'Failed to remove role');
         } finally {
             setIsSubmitting(false);
         }
@@ -108,12 +117,6 @@ export default function UserRoles() {
             {error && (
                 <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-lg text-sm">
                     {error}
-                </div>
-            )}
-
-            {success && (
-                <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900/20 text-green-600 dark:text-green-400 p-4 rounded-lg text-sm">
-                    {success}
                 </div>
             )}
 
@@ -145,8 +148,8 @@ export default function UserRoles() {
                                     key={user.id}
                                     onClick={() => handleSelectUser(user)}
                                     className={`w-full text-left p-4 rounded-lg border transition-all ${selectedUser?.id === user.id
-                                            ? 'border-primary bg-primary/10'
-                                            : 'border-border hover:border-primary/50 hover:bg-secondary/50'
+                                        ? 'border-primary bg-primary/10'
+                                        : 'border-border hover:border-primary/50 hover:bg-secondary/50'
                                         }`}
                                 >
                                     <div className="font-medium">{user.userName}</div>

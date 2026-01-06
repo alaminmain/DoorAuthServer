@@ -15,6 +15,27 @@ interface TreeNode extends Menu {
     children?: TreeNode[];
 }
 
+// Flatten nested menu structure from API into a flat array
+const flattenMenus = (menus: Menu[]): Menu[] => {
+    const result: Menu[] = [];
+
+    const flatten = (items: Menu[]) => {
+        for (const item of items) {
+            // Create a copy without the nested children to avoid circular references
+            const { children, ...menuWithoutChildren } = item as any;
+            result.push(menuWithoutChildren as Menu);
+
+            // Recursively flatten children if they exist
+            if (children && Array.isArray(children) && children.length > 0) {
+                flatten(children);
+            }
+        }
+    };
+
+    flatten(menus);
+    return result;
+};
+
 const buildTree = (items: Menu[]): TreeNode[] => {
     const rootItems: TreeNode[] = [];
     const lookup: Record<string, TreeNode> = {};
@@ -86,7 +107,11 @@ const MenuNode = ({ node, level, onEdit, onDelete }: { node: TreeNode; level: nu
 
 
 export default function MenuList({ menus, onEdit, onDelete, isLoading }: MenuListProps) {
-    const tree = useMemo(() => buildTree(menus), [menus]);
+    const tree = useMemo(() => {
+        // First flatten the nested structure from API, then rebuild the tree
+        const flatMenus = flattenMenus(menus);
+        return buildTree(flatMenus);
+    }, [menus]);
 
     if (isLoading) return <div className="text-center py-4 text-muted-foreground">Loading menus...</div>;
     if (!menus.length) return <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg bg-secondary/10">No menus found. Select an application to view menus.</div>;

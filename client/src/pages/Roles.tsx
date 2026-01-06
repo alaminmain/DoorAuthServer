@@ -7,6 +7,8 @@ import Input from '../components/ui/Input';
 import Dialog from '../components/ui/Dialog';
 import RoleList from '../components/roles/RoleList';
 import RoleForm from '../components/roles/RoleForm';
+import { useToast } from '../contexts/ToastContext';
+import { confirmDelete } from '../utils/sweetalert';
 
 export default function Roles() {
     const [roles, setRoles] = useState<Role[]>([]);
@@ -16,6 +18,8 @@ export default function Roles() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const toast = useToast();
 
     const fetchRoles = async () => {
         try {
@@ -47,13 +51,16 @@ export default function Roles() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this role? This action cannot be undone.')) return;
+        const confirmed = await confirmDelete('this role');
+        if (!confirmed) return;
 
         try {
             await roleService.delete(id);
             setRoles(prev => prev.filter(r => r.id !== id));
+            toast.success('Role deleted successfully');
         } catch (err: any) {
             setError(err.message || 'Failed to delete role');
+            toast.error(err.message || 'Failed to delete role');
         }
     };
 
@@ -65,14 +72,17 @@ export default function Roles() {
             if (selectedRole) {
                 const updated = await roleService.update(selectedRole.id, data);
                 setRoles(prev => prev.map(r => r.id === updated.id ? updated : r));
+                toast.success('Role updated successfully');
             } else {
                 const created = await roleService.create(data);
                 setRoles(prev => [...prev, created]);
+                toast.success('Role created successfully');
             }
 
             setIsDialogOpen(false);
         } catch (err: any) {
             setError(err.message || 'Failed to save role');
+            toast.error(err.message || 'Failed to save role');
         } finally {
             setIsSubmitting(false);
         }

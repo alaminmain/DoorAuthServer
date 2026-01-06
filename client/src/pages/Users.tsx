@@ -8,6 +8,8 @@ import Dialog from '../components/ui/Dialog';
 import UserList from '../components/users/UserList';
 import UserForm from '../components/users/UserForm';
 import UserDetailsModal from '../components/users/UserDetailsModal';
+import { useToast } from '../contexts/ToastContext';
+import { confirmDelete } from '../utils/sweetalert';
 
 export default function Users() {
     const [users, setUsers] = useState<User[]>([]);
@@ -18,6 +20,8 @@ export default function Users() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const toast = useToast();
 
     const fetchUsers = async () => {
         try {
@@ -53,13 +57,16 @@ export default function Users() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this user?')) return;
+        const confirmed = await confirmDelete('this user');
+        if (!confirmed) return;
 
         try {
             await userService.delete(id);
             setUsers(prev => prev.filter(u => u.id !== id));
+            toast.success('User deleted successfully');
         } catch (err: any) {
             setError(err.message || 'Failed to delete user');
+            toast.error(err.message || 'Failed to delete user');
         }
     };
 
@@ -78,14 +85,17 @@ export default function Users() {
                 };
                 const updated = await userService.update(selectedUser.id, updateData);
                 setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
+                toast.success('User updated successfully');
             } else {
                 const created = await userService.create(data);
                 setUsers(prev => [...prev, created]);
+                toast.success('User created successfully');
             }
 
             setIsDialogOpen(false);
         } catch (err: any) {
             setError(err.message || 'Failed to save user');
+            toast.error(err.message || 'Failed to save user');
         } finally {
             setIsSubmitting(false);
         }

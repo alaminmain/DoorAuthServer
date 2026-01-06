@@ -5,6 +5,8 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { userService } from '../../services/user.service';
 import { formatDate } from '../../utils/date';
+import { useToast } from '../../contexts/ToastContext';
+import { confirmDialog } from '../../utils/sweetalert';
 
 interface UserDetailsModalProps {
     user: User;
@@ -21,6 +23,8 @@ export default function UserDetailsModal({ user: initialUser, onClose, onUpdate 
     const [newPassword, setNewPassword] = useState('');
     const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
     const [logsLoaded, setLogsLoaded] = useState(false);
+
+    const toast = useToast();
 
     // Update local user state when prop changes
     useEffect(() => {
@@ -40,10 +44,17 @@ export default function UserDetailsModal({ user: initialUser, onClose, onUpdate 
     const handleResetPassword = async () => {
         if (!newPassword || newPassword.length < 6) {
             setError('Password must be at least 6 characters');
+            toast.error('Password must be at least 6 characters');
             return;
         }
 
-        if (!window.confirm('Are you sure you want to reset this user\'s password?')) return;
+        const confirmed = await confirmDialog(
+            'Reset Password?',
+            'Are you sure you want to reset this user\'s password?',
+            'Yes, reset',
+            'Cancel'
+        );
+        if (!confirmed) return;
 
         try {
             setIsLoading(true);
@@ -51,25 +62,35 @@ export default function UserDetailsModal({ user: initialUser, onClose, onUpdate 
             await userService.resetPassword(user.id, newPassword);
             setSuccess('Password reset successfully');
             setNewPassword('');
+            toast.success('Password reset successfully');
             setTimeout(() => setSuccess(null), 3000);
         } catch (err: any) {
             setError(err.message || 'Failed to reset password');
+            toast.error(err.message || 'Failed to reset password');
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleSendResetLink = async () => {
-        if (!window.confirm(`Send password reset link to ${user.email}?`)) return;
+        const confirmed = await confirmDialog(
+            'Send Reset Link?',
+            `Send password reset link to ${user.email}?`,
+            'Yes, send',
+            'Cancel'
+        );
+        if (!confirmed) return;
 
         try {
             setIsLoading(true);
             setError(null);
             await userService.sendResetPasswordLink(user.id, user.email);
             setSuccess('Password reset link sent successfully');
+            toast.success('Password reset link sent successfully');
             setTimeout(() => setSuccess(null), 3000);
         } catch (err: any) {
             setError(err.message || 'Failed to send reset link');
+            toast.error(err.message || 'Failed to send reset link');
         } finally {
             setIsLoading(false);
         }
@@ -77,17 +98,26 @@ export default function UserDetailsModal({ user: initialUser, onClose, onUpdate 
 
     const handleToggleLock = async () => {
         const newStatus = !user.isLocked;
-        if (!window.confirm(`Are you sure you want to ${newStatus ? 'lock' : 'unlock'} this user?`)) return;
+
+        const confirmed = await confirmDialog(
+            `${newStatus ? 'Lock' : 'Unlock'} User?`,
+            `Are you sure you want to ${newStatus ? 'lock' : 'unlock'} this user?`,
+            `Yes, ${newStatus ? 'lock' : 'unlock'}`,
+            'Cancel'
+        );
+        if (!confirmed) return;
 
         try {
             setIsLoading(true);
             setError(null);
             await userService.changeLockStatus(user.id, newStatus);
             setSuccess(`User ${newStatus ? 'locked' : 'unlocked'} successfully`);
+            toast.success(`User ${newStatus ? 'locked' : 'unlocked'} successfully`);
             await refreshUser(); // Refresh user state
             setTimeout(() => setSuccess(null), 3000);
         } catch (err: any) {
             setError(err.message || 'Failed to update lock status');
+            toast.error(err.message || 'Failed to update lock status');
         } finally {
             setIsLoading(false);
         }

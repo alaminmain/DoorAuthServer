@@ -7,6 +7,8 @@ import Input from '../components/ui/Input';
 import Dialog from '../components/ui/Dialog';
 import TenantList from '../components/tenants/TenantList';
 import TenantForm from '../components/tenants/TenantForm';
+import { useToast } from '../contexts/ToastContext';
+import { confirmDelete } from '../utils/sweetalert';
 
 export default function Tenants() {
     const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -16,6 +18,8 @@ export default function Tenants() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const toast = useToast();
 
     const fetchTenants = async () => {
         try {
@@ -47,13 +51,16 @@ export default function Tenants() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this tenant? This action cannot be undone.')) return;
+        const confirmed = await confirmDelete('this tenant');
+        if (!confirmed) return;
 
         try {
             await tenantService.delete(id);
             setTenants(prev => prev.filter(t => t.id !== id));
+            toast.success('Tenant deleted successfully');
         } catch (err: any) {
             setError(err.message || 'Failed to delete tenant');
+            toast.error(err.message || 'Failed to delete tenant');
         }
     };
 
@@ -65,14 +72,17 @@ export default function Tenants() {
             if (selectedTenant) {
                 const updated = await tenantService.update(selectedTenant.id, data);
                 setTenants(prev => prev.map(t => t.id === updated.id ? updated : t));
+                toast.success('Tenant updated successfully');
             } else {
                 const created = await tenantService.create(data);
                 setTenants(prev => [...prev, created]);
+                toast.success('Tenant created successfully');
             }
 
             setIsDialogOpen(false);
         } catch (err: any) {
             setError(err.message || 'Failed to save tenant');
+            toast.error(err.message || 'Failed to save tenant');
         } finally {
             setIsSubmitting(false);
         }

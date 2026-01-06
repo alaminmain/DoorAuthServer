@@ -7,6 +7,8 @@ import Button from '../components/ui/Button';
 import Dialog from '../components/ui/Dialog';
 import MenuList from '../components/menus/MenuList';
 import MenuForm from '../components/menus/MenuForm';
+import { useToast } from '../contexts/ToastContext';
+import { confirmDelete } from '../utils/sweetalert';
 
 export default function Menus() {
     const [menus, setMenus] = useState<Menu[]>([]);
@@ -18,6 +20,8 @@ export default function Menus() {
     const [selectedMenu, setSelectedMenu] = useState<Menu | undefined>(undefined);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const toast = useToast();
 
     useEffect(() => {
         // Load apps
@@ -42,6 +46,7 @@ export default function Menus() {
             setMenus(data);
         } catch (err) {
             console.error('Failed to load menus', err);
+            toast.error('Failed to load menus');
         } finally {
             setIsLoading(false);
         }
@@ -60,12 +65,18 @@ export default function Menus() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Delete this menu item? Children will be orphaned (or deleted).')) return;
+        const confirmed = await confirmDelete('this menu item', 'Children will be orphaned or deleted.');
+        if (!confirmed) return;
+
         try {
             await menuService.delete(id);
-            setMenus(prev => prev.filter(m => m.id !== id));
+            toast.success('Menu deleted successfully');
+            // Refresh the menu list after deletion
+            if (selectedAppId) {
+                await loadMenus(selectedAppId);
+            }
         } catch (err: any) {
-            alert('Failed to delete menu');
+            toast.error('Failed to delete menu');
         }
     };
 
@@ -75,15 +86,18 @@ export default function Menus() {
             if (selectedMenu) {
                 const updated = await menuService.update(selectedMenu.id, data);
                 setMenus(prev => prev.map(m => m.id === updated.id ? updated : m));
+                toast.success('Menu updated successfully');
             } else {
                 const created = await menuService.create(data);
                 setMenus(prev => [...prev, created]);
+                toast.success('Menu created successfully');
             }
             setIsDialogOpen(false);
             // Refresh to ensure order/parenting is correct if needed, but optimistic update is fine
             if (selectedAppId) loadMenus(selectedAppId);
         } catch (err: any) {
             setError(err.message || 'Failed to save menu');
+            toast.error(err.message || 'Failed to save menu');
         } finally {
             setIsSubmitting(false);
         }

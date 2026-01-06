@@ -7,6 +7,8 @@ import Input from '../components/ui/Input';
 import Dialog from '../components/ui/Dialog';
 import ApplicationList from '../components/applications/ApplicationList';
 import ApplicationForm from '../components/applications/ApplicationForm';
+import { useToast } from '../contexts/ToastContext';
+import { confirmDialog, confirmDelete } from '../utils/sweetalert';
 
 export default function Applications() {
     const [applications, setApplications] = useState<Application[]>([]);
@@ -18,6 +20,8 @@ export default function Applications() {
     const [error, setError] = useState<string | null>(null);
     const [secretInfo, setSecretInfo] = useState<{ clientId: string; clientSecret: string } | null>(null);
     const [copiedField, setCopiedField] = useState<'clientId' | 'clientSecret' | null>(null);
+
+    const toast = useToast();
 
     const fetchApplications = async () => {
         try {
@@ -49,13 +53,16 @@ export default function Applications() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this application? This action cannot be undone.')) return;
+        const confirmed = await confirmDelete('this application');
+        if (!confirmed) return;
 
         try {
             await applicationService.delete(id);
             setApplications(prev => prev.filter(app => app.id !== id));
+            toast.success('Application deleted successfully');
         } catch (err: any) {
             setError(err.message || 'Failed to delete application');
+            toast.error(err.message || 'Failed to delete application');
         }
     };
 
@@ -66,8 +73,10 @@ export default function Applications() {
 
             if (selectedApp) {
                 await applicationService.update(selectedApp.id, data);
+                toast.success('Application updated successfully');
             } else {
                 const created = await applicationService.create(data);
+                toast.success('Application created successfully');
 
                 // Show secret for new applications
                 if (created.clientSecret) {
@@ -84,13 +93,20 @@ export default function Applications() {
         } catch (err: any) {
             console.error('Error saving application:', err);
             setError(err.message || 'Failed to save application');
+            toast.error(err.message || 'Failed to save application');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleRegenerateSecret = async (id: string) => {
-        if (!window.confirm('Are you sure? The old secret will stop working immediately.')) return;
+        const confirmed = await confirmDialog(
+            'Regenerate Client Secret?',
+            'The old secret will stop working immediately. Make sure to update all applications using this secret.',
+            'Yes, regenerate',
+            'Cancel'
+        );
+        if (!confirmed) return;
 
         try {
             const { clientSecret } = await applicationService.regenerateSecret(id);
@@ -101,8 +117,10 @@ export default function Applications() {
                     clientSecret: clientSecret
                 });
             }
+            toast.success('Client secret regenerated successfully');
         } catch (err: any) {
             setError(err.message || 'Failed to regenerate secret');
+            toast.error(err.message || 'Failed to regenerate secret');
         }
     };
 
