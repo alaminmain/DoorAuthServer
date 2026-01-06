@@ -161,6 +161,7 @@ export interface ActivityLog {
     details?: string;
     ipAddress?: string;
     timestamp: Date;
+    tenantName?: string;
 }
 
 export interface ChangePasswordDto {
