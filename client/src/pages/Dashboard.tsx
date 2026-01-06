@@ -1,4 +1,5 @@
-import { type ElementType } from 'react';
+import { useState, useEffect, type ElementType } from 'react';
+import { dashboardService } from '../services/dashboard.service';
 import {
     Users,
     Building2,
@@ -45,13 +46,79 @@ const StatCard = ({ title, value, change, icon: Icon, trend, color }: StatCardPr
 );
 
 export default function Dashboard() {
-    // Mock data - in a real app, this would come from an API
-    const stats = [
-        { title: 'Total Tenants', value: '12', change: '+20.1%', icon: Building2, trend: 'up', color: '#3b82f6' },
-        { title: 'Active Applications', value: '45', change: '+15%', icon: AppWindow, trend: 'up', color: '#8b5cf6' },
-        { title: 'Registered Users', value: '2,350', change: '+180', icon: Users, trend: 'up', color: '#10b981' },
-        { title: 'System Roles', value: '8', change: '0%', icon: ShieldCheck, trend: 'neutral', color: '#f59e0b' },
-    ];
+    const [stats, setStats] = useState<any>(null); // using any for mapped stats or interface
+    const [loading, setLoading] = useState(true);
+    const [activity, setActivity] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const data = await dashboardService.getStats();
+
+                // Map API data to UI format
+                const uiStats = [
+                    {
+                        title: 'Total Tenants',
+                        value: data.totalTenants.toString(),
+                        change: 'Active',
+                        icon: Building2,
+                        trend: 'up',
+                        color: '#3b82f6'
+                    },
+                    {
+                        title: 'Active Applications',
+                        value: data.totalApplications.toString(),
+                        change: 'Integrated',
+                        icon: AppWindow,
+                        trend: 'up',
+                        color: '#8b5cf6'
+                    },
+                    {
+                        title: 'Registered Users',
+                        value: data.totalUsers.toString(),
+                        change: 'Total',
+                        icon: Users,
+                        trend: 'up',
+                        color: '#10b981'
+                    },
+                    {
+                        title: 'System Roles',
+                        value: data.totalRoles.toString(),
+                        change: 'defined',
+                        icon: ShieldCheck,
+                        trend: 'neutral',
+                        color: '#f59e0b'
+                    },
+                ];
+
+                setStats(uiStats);
+                setActivity(data.recentActivity);
+            } catch (error) {
+                console.error('Failed to load dashboard stats', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="space-y-6 animate-pulse">
+                <div className="h-8 w-48 bg-secondary rounded mb-6"></div>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="h-32 bg-secondary rounded-lg"></div>
+                    ))}
+                </div>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                    <div className="col-span-4 h-64 bg-secondary rounded-lg"></div>
+                    <div className="col-span-3 h-64 bg-secondary rounded-lg"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -72,7 +139,7 @@ export default function Dashboard() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {stats.map((stat, i) => (
+                {stats && stats.map((stat: any, i: number) => (
                     <div key={stat.title} className="animate-slide-in" style={{ animationDelay: `${i * 100}ms` }}>
                         <StatCard {...stat} trend={stat.trend as any} />
                     </div>
@@ -103,24 +170,28 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {[1, 2, 3, 4, 5].map((_, i) => (
-                                <div key={i} className="flex items-start pb-4 border-b border-border last:border-0 last:pb-0">
-                                    <div className="rounded-full p-2 bg-secondary mr-4">
-                                        <Clock className="h-4 w-4 text-primary-500" />
+                            {activity.length === 0 ? (
+                                <p className="text-sm text-muted-foreground text-center py-4">No recent activity</p>
+                            ) : (
+                                activity.map((log) => (
+                                    <div key={log.id} className="flex items-start pb-4 border-b border-border last:border-0 last:pb-0">
+                                        <div className="rounded-full p-2 bg-secondary mr-4">
+                                            <Clock className="h-4 w-4 text-primary-500" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-medium leading-none">
+                                                {log.action} <span className="text-xs text-muted-foreground">({log.resource})</span>
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {log.userName} {log.details ? `- ${log.details}` : ''}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground opacity-70">
+                                                {new Date(log.timestamp).toLocaleString()}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-medium leading-none">
-                                            {i % 2 === 0 ? 'User Login' : 'Tenant Created'}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {i % 2 === 0 ? 'admin@example.com logged in' : 'New tenant "Acme Corp" registered'}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground opacity-70">
-                                            {2 + i} minutes ago
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </CardContent>
                 </Card>

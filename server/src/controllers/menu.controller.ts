@@ -110,7 +110,7 @@ export class MenuController {
                     path,
                     icon,
                     order: order || 0,
-                    parentId,
+                    parentId: parentId || null,
                     applicationId,
                     requiredPermission,
                 },

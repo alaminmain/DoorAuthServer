@@ -2,12 +2,13 @@ import { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { Role, CreateRoleDto, Tenant, Permission, Application } from '../../types';
+import type { Role, CreateRoleDto, Tenant, Permission, Application, Menu } from '../../types';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { tenantService } from '../../services/tenant.service';
 import { roleService } from '../../services/role.service';
 import { applicationService } from '../../services/application.service';
+import { menuService } from '../../services/menu.service';
 
 const roleSchema = z.object({
     tenantId: z.string().min(1, 'Tenant is required'),
@@ -29,6 +30,7 @@ interface RoleFormProps {
 export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFormProps) {
     const [tenants, setTenants] = useState<Tenant[]>([]);
     const [applications, setApplications] = useState<Application[]>([]);
+    const [menus, setMenus] = useState<Menu[]>([]);
     const [permissions, setPermissions] = useState<Permission[]>([]);
     const [loadingConfig, setLoadingConfig] = useState(true);
 
@@ -52,6 +54,7 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
 
     const selectedPermissionIds = watch('permissionIds') || [];
     const selectedTenantId = watch('tenantId');
+    const selectedApplicationId = watch('applicationId');
 
     useEffect(() => {
         const loadConfig = async () => {
@@ -80,6 +83,14 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
     }, [selectedTenantId]);
 
     useEffect(() => {
+        if (selectedApplicationId) {
+            menuService.getAll(selectedApplicationId).then(setMenus).catch(console.error);
+        } else {
+            setMenus([]);
+        }
+    }, [selectedApplicationId]);
+
+    useEffect(() => {
         if (role) {
             reset({
                 tenantId: role.tenantId,
@@ -100,19 +111,26 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
         return groups;
     }, [permissions]);
 
+    const getMenuResource = (menu: Menu) => {
+        // Use requiredPermission if set, otherwise normalize the label
+        return menu.requiredPermission || menu.label.toLowerCase().replace(/\s+/g, '-');
+    };
+
     const togglePermission = (id: string) => {
         const current = selectedPermissionIds;
         const isSelected = current.includes(id);
+
         if (isSelected) {
             setValue('permissionIds', current.filter(pid => pid !== id));
         } else {
+            // If requested, we could ensure mutual exclusivity, but for roles typically we want additive
             setValue('permissionIds', [...current, id]);
         }
     };
 
     const toggleResource = (resource: string) => {
-        const group = permissionsByResource[resource];
-        const groupIds = group.map(p => p.id);
+        const group = permissionsByResource[resource] || [];
+        const groupIds = group.map(p => `${p.resource}:${p.action}`);
         const allSelected = groupIds.every(id => selectedPermissionIds.includes(id));
 
         if (allSelected) {
@@ -123,35 +141,48 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
         }
     };
 
+    const isMenuPermSelected = (menu: Menu, action: 'read' | 'write') => {
+        const resource = getMenuResource(menu);
+        return selectedPermissionIds.includes(`${resource}:${action}`);
+    };
+
+    const toggleMenuPerm = (menu: Menu, action: 'read' | 'write') => {
+        const resource = getMenuResource(menu);
+        const permId = `${resource}:${action}`;
+        togglePermission(permId);
+    };
+
     return (
         <form onSubmit={handleSubmit((data) => onSubmit(data as CreateRoleDto))} className="space-y-6">
             <div className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Tenant</label>
-                    <select
-                        {...register('tenantId')}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
-                        disabled={!!role}
-                    >
-                        <option value="">Select a Tenant</option>
-                        {tenants.map(t => (
-                            <option key={t.id} value={t.id}>{t.name}</option>
-                        ))}
-                    </select>
-                    {errors.tenantId && <p className="mt-1 text-sm text-red-500">{errors.tenantId.message}</p>}
-                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Tenant</label>
+                        <select
+                            {...register('tenantId')}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
+                            disabled={!!role}
+                        >
+                            <option value="">Select a Tenant</option>
+                            {tenants.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                        </select>
+                        {errors.tenantId && <p className="mt-1 text-sm text-red-500">{errors.tenantId.message}</p>}
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Application (Optional)</label>
-                    <select
-                        {...register('applicationId')}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
-                    >
-                        <option value="">All Applications</option>
-                        {applications.map(app => (
-                            <option key={app.id} value={app.id}>{app.name}</option>
-                        ))}
-                    </select>
+                    <div>
+                        <label className="block text-sm font-medium text-foreground mb-2">Application (Optional)</label>
+                        <select
+                            {...register('applicationId')}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
+                        >
+                            <option value="">All Applications</option>
+                            {applications.map(app => (
+                                <option key={app.id} value={app.id}>{app.name}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 <Input
@@ -168,12 +199,50 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
                 />
             </div>
 
+            {/* Menu Permissions Section */}
+            {selectedApplicationId && menus.length > 0 && (
+                <div className="border-t border-border pt-4">
+                    <h3 className="text-sm font-medium text-foreground mb-4">Page Access Permissions</h3>
+                    <div className="border rounded-md divide-y divide-border">
+                        <div className="bg-secondary/20 p-3 grid grid-cols-12 gap-4 font-medium text-xs">
+                            <div className="col-span-8">Menu / Page</div>
+                            <div className="col-span-2 text-center">Read</div>
+                            <div className="col-span-2 text-center">Write</div>
+                        </div>
+                        {menus.map((menu) => (
+                            <div key={menu.id} className="p-3 grid grid-cols-12 gap-4 items-center text-sm">
+                                <div className="col-span-8 flex flex-col">
+                                    <span className="font-medium">{menu.label}</span>
+                                    <span className="text-xs text-muted-foreground font-mono">{menu.path || 'No Path'}</span>
+                                </div>
+                                <div className="col-span-2 flex justify-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={isMenuPermSelected(menu, 'read')}
+                                        onChange={() => toggleMenuPerm(menu, 'read')}
+                                        className="rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                </div>
+                                <div className="col-span-2 flex justify-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={isMenuPermSelected(menu, 'write')}
+                                        onChange={() => toggleMenuPerm(menu, 'write')}
+                                        className="rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className="border-t border-border pt-4">
-                <h3 className="text-sm font-medium text-foreground mb-4">Permissions</h3>
+                <h3 className="text-sm font-medium text-foreground mb-4">Advanced Permissions</h3>
                 {loadingConfig ? (
                     <div className="text-sm text-muted-foreground">Loading permissions...</div>
                 ) : permissions.length === 0 ? (
-                    <div className="text-sm text-muted-foreground">No permissions available.</div>
+                    <div className="text-sm text-muted-foreground">No predefined permissions found. Use the menu above to assign access.</div>
                 ) : (
                     <div className="grid gap-6 sm:grid-cols-2">
                         {Object.entries(permissionsByResource).map(([resource, group]) => {

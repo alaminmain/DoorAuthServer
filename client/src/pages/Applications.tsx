@@ -65,11 +65,11 @@ export default function Applications() {
             setError(null);
 
             if (selectedApp) {
-                const updated = await applicationService.update(selectedApp.id, data);
-                setApplications(prev => prev.map(app => app.id === updated.id ? updated : app));
+                await applicationService.update(selectedApp.id, data);
             } else {
                 const created = await applicationService.create(data);
-                setApplications(prev => [...prev, created]);
+
+                // Show secret for new applications
                 if (created.clientSecret) {
                     setSecretInfo({
                         clientId: created.clientId,
@@ -78,8 +78,11 @@ export default function Applications() {
                 }
             }
 
+            // Refetch to ensure list is up to date and consistent
+            await fetchApplications();
             setIsDialogOpen(false);
         } catch (err: any) {
+            console.error('Error saving application:', err);
             setError(err.message || 'Failed to save application');
         } finally {
             setIsSubmitting(false);
