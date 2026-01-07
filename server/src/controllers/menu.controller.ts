@@ -270,6 +270,26 @@ export class MenuController {
                 return;
             }
 
+            Logger.info('Smart menu request', { userId: user.userId, applicationId });
+
+            // Find application by ID or clientId
+            const application = await prisma.application.findFirst({
+                where: {
+                    OR: [
+                        { id: applicationId as string },
+                        { clientId: applicationId as string }
+                    ]
+                }
+            });
+
+            if (!application) {
+                Logger.warn('Application not found', { applicationId });
+                res.status(404).json(ApiResponse.error('Application not found'));
+                return;
+            }
+
+            Logger.info('Application found', { appId: application.id, appName: application.name });
+
             // Get user with roles and permissions
             const userRecord = await prisma.user.findUnique({
                 where: { id: user.userId },
@@ -296,20 +316,26 @@ export class MenuController {
                 ur.role.permissions.map(p => `${p.resource}:${p.action}`)
             );
 
-            // Get all menus for the application
+            Logger.info('User permissions', { userId: user.userId, permissions: userPermissions });
+
+            // Get all menus for the application using the actual database ID
             const allMenus = await prisma.menu.findMany({
-                where: { applicationId: applicationId as string },
+                where: { applicationId: application.id },
                 orderBy: [
                     { order: 'asc' },
                     { label: 'asc' },
                 ],
             });
 
+            Logger.info('Menus found', { count: allMenus.length, applicationId: application.id });
+
             // Filter menus based on permissions
             const filteredMenus = allMenus.filter(menu => {
                 if (!menu.requiredPermission) return true; // No permission required
                 return userPermissions.includes(menu.requiredPermission);
             });
+
+            Logger.info('Filtered menus', { count: filteredMenus.length });
 
             // Build hierarchy
             const hierarchy = this.buildMenuHierarchy(filteredMenus);
@@ -318,6 +344,7 @@ export class MenuController {
 
             res.status(200).json(ApiResponse.success(hierarchy));
         } catch (error: any) {
+            Logger.error('Error in getSmartMenu', { error: error.message });
             res.status(500).json(ApiResponse.error(error.message));
         }
     }

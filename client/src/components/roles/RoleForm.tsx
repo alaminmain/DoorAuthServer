@@ -92,6 +92,13 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
 
     useEffect(() => {
         if (role) {
+            // First set the tenant and application IDs to trigger loading
+            setValue('tenantId', role.tenantId);
+            if (role.applicationId) {
+                setValue('applicationId', role.applicationId);
+            }
+
+            // Then reset the entire form
             reset({
                 tenantId: role.tenantId,
                 applicationId: role.applicationId || '',
@@ -100,7 +107,7 @@ export default function RoleForm({ role, onSubmit, onCancel, isLoading }: RoleFo
                 permissionIds: role.permissions?.map(p => `${p.resource}:${p.action}`) || [],
             });
         }
-    }, [role, reset]);
+    }, [role, reset, setValue]);
 
     const permissionsByResource = useMemo(() => {
         const groups: Record<string, Permission[]> = {};

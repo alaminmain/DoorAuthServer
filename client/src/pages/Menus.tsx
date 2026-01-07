@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, Upload } from 'lucide-react';
 import { menuService } from '../services/menu.service';
 import { applicationService } from '../services/application.service';
 import type { Menu, CreateMenuDto, Application } from '../types';
@@ -20,6 +20,7 @@ export default function Menus() {
     const [selectedMenu, setSelectedMenu] = useState<Menu | undefined>(undefined);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const toast = useToast();
 
@@ -103,6 +104,75 @@ export default function Menus() {
         }
     };
 
+    const handleBulkImport = () => {
+        if (!selectedAppId) {
+            toast.error('Please select an application first');
+            return;
+        }
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            setIsSubmitting(true);
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            // Validate structure
+            if (!data.menus || !Array.isArray(data.menus)) {
+                toast.error('Invalid JSON format. Expected { "menus": [...] }');
+                return;
+            }
+
+            // Create menus using bulk endpoint
+            const menusToCreate = data.menus.map((menu: any) => ({
+                label: menu.label,
+                path: menu.path,
+                icon: menu.icon || '',
+                order: menu.order || 0,
+                parentId: menu.parentId || null,
+                applicationId: selectedAppId,
+                requiredPermission: menu.requiredPermission || null
+            }));
+
+            const response = await fetch('/api/menus/bulk', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                },
+                body: JSON.stringify({
+                    applicationId: selectedAppId,
+                    menus: menusToCreate
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to import menus');
+            }
+
+            toast.success(`Successfully imported ${menusToCreate.length} menus`);
+
+            // Refresh menu list
+            if (selectedAppId) {
+                await loadMenus(selectedAppId);
+            }
+        } catch (err: any) {
+            console.error('Bulk import error:', err);
+            toast.error(err.message || 'Failed to import menus');
+        } finally {
+            setIsSubmitting(false);
+            // Reset file input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -121,10 +191,25 @@ export default function Menus() {
                             <option key={app.id} value={app.id}>{app.name}</option>
                         ))}
                     </select>
+                    <Button
+                        onClick={handleBulkImport}
+                        disabled={!selectedAppId || isSubmitting}
+                        variant="secondary"
+                    >
+                        <Upload size={18} className="mr-2" />
+                        Bulk Import
+                    </Button>
                     <Button onClick={handleCreate} disabled={!selectedAppId}>
                         <Plus size={18} className="mr-2" />
                         Add Menu Item
                     </Button>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".json"
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
+                    />
                 </div>
             </div>
 

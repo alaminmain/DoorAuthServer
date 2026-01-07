@@ -1,0 +1,77 @@
+{
+  "applicationId": "vehicle-management-web",
+  "menus": [
+    {
+      "label": "Dashboard",
+      "path": "/dashboard",
+      "icon": "dashboard",
+      "order": 1,
+      "requiredPermission": "dashboard:read",
+      "parentId": null
+    },
+    {
+      "label": "Vehicles",
+      "path": "/vehicles",
+      "icon": "directions_car",
+      "order": 2,
+      "requiredPermission": "vehicles:read",
+      "parentId": null
+    },
+    {
+      "label": "Drivers",
+      "path": "/drivers",
+      "icon": "person",
+      "order": 3,
+      "requiredPermission": "drivers:read",
+      "parentId": null
+    },
+    {
+      "label": "Bookings",
+      "path": "/bookings",
+      "icon": "book_online",
+      "order": 4,
+      "requiredPermission": "bookings:read",
+      "parentId": null
+    },
+    {
+      "label": "Customers",
+      "path": "/customers",
+      "icon": "people",
+      "order": 5,
+      "requiredPermission": "customers:read",
+      "parentId": null
+    },
+    {
+      "label": "Legal Cases",
+      "path": "/legalcases",
+      "icon": "gavel",
+      "order": 6,
+      "requiredPermission": "legalcases:read",
+      "parentId": null
+    },
+    {
+      "label": "Maintenance",
+      "path": "/maintenance",
+      "icon": "build",
+      "order": 7,
+      "requiredPermission": "maintenance:read",
+      "parentId": null
+    },
+    {
+      "label": "Settings",
+      "path": "/settings",
+      "icon": "settings",
+      "order": 8,
+      "requiredPermission": "settings:read",
+      "parentId": null
+    },
+    {
+      "label": "Tenants",
+      "path": "/tenants",
+      "icon": "business",
+      "order": 9,
+      "requiredPermission": "tenants:read",
+      "parentId": null
+    }
+  ]
+}

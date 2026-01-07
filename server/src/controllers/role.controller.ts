@@ -167,40 +167,82 @@ export class RoleController {
                 return;
             }
 
-            const updateData: any = {
-                ...(name && { name }),
-                ...(description !== undefined && { description }),
-                ...(req.body.applicationId !== undefined && { applicationId: req.body.applicationId }),
-            };
+            // Use transaction to ensure atomic update
+            const updated = await prisma.$transaction(async (tx) => {
+                // First, update basic role info
+                const basicUpdate: any = {
+                    ...(name && { name }),
+                    ...(description !== undefined && { description }),
+                    ...(req.body.applicationId !== undefined && { applicationId: req.body.applicationId }),
+                };
 
-
-            if (permissionIds && Array.isArray(permissionIds)) {
-                const permissionInputs: any[] = [];
-                permissionIds.forEach((pid: string) => {
-                    const [resource, action] = pid.split(':');
-                    if (resource && action) {
-                        permissionInputs.push({ resource, action });
-                    }
+                await tx.role.update({
+                    where: { id },
+                    data: basicUpdate,
                 });
 
-                updateData.permissions = {
-                    deleteMany: {},
-                    create: permissionInputs,
-                };
-            }
+                // Then handle permissions separately if provided
+                if (permissionIds && Array.isArray(permissionIds)) {
+                    // Delete all existing permissions for this role
+                    await tx.permission.deleteMany({
+                        where: { roleId: id },
+                    });
 
-            const updated = await prisma.role.update({
-                where: { id },
-                data: updateData,
-                include: {
-                    permissions: true
+                    // Parse and deduplicate permissions
+                    const permissionSet = new Set<string>();
+                    const permissionInputs: any[] = [];
+
+                    permissionIds.forEach((pid: string) => {
+                        const [resource, action] = pid.split(':');
+                        if (resource && action) {
+                            const key = `${resource}:${action}`;
+                            if (!permissionSet.has(key)) {
+                                permissionSet.add(key);
+                                permissionInputs.push({
+                                    resource,
+                                    action,
+                                    roleId: id,
+                                });
+                            }
+                        }
+                    });
+
+                    // Create new permissions individually (SQLite doesn't support createMany)
+                    for (const permInput of permissionInputs) {
+                        try {
+                            await tx.permission.create({
+                                data: permInput,
+                            });
+                        } catch (createError: any) {
+                            // If it's a unique constraint error, log and continue
+                            if (createError.code === 'P2002') {
+                                Logger.warn('Duplicate permission skipped', {
+                                    roleId: id,
+                                    resource: permInput.resource,
+                                    action: permInput.action
+                                });
+                            } else {
+                                throw createError;
+                            }
+                        }
+                    }
                 }
+
+                // Return the updated role with permissions
+                return await tx.role.findUnique({
+                    where: { id },
+                    include: {
+                        permissions: true,
+                    },
+                });
             });
 
-            Logger.info('Role updated', { roleId: id });
+            Logger.info('Role updated', { roleId: id, permissionsCount: updated?.permissions?.length || 0 });
 
             res.status(200).json(ApiResponse.success(updated, 'Role updated successfully'));
         } catch (error: any) {
+            const { id } = req.params;
+            Logger.error('Error updating role', { error: error.message, roleId: id });
             res.status(500).json(ApiResponse.error(error.message));
         }
     }
