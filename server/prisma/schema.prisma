@@ -21,10 +21,11 @@ model Tenant {
   brandingConfig String?
   createdAt      DateTime @default(now()) @map("created_at")
 
-  users        User[]
-  applications Application[]
-  roles        Role[]
-  auditLogs    AuditLog[]
+  users         User[]
+  applications  Application[]
+  roles         Role[]
+  auditLogs     AuditLog[]
+  organizations Organization[]
 
   @@map("tenants")
 }
@@ -46,18 +47,43 @@ model User {
   lastLoginTime      DateTime?
   passAttemptCount   Int       @default(0)
   isPassExpired      Boolean   @default(false)
+  emailVerified      Boolean   @default(false) @map("email_verified")
+  emailVerifiedAt    DateTime? @map("email_verified_at")
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId   String
-  roles      UserRole[]
-  auditLogs  AuditLog[]
-  passTokens PassToken[]
+  tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId         String
+  organization     Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  organizationId   String?
+  roles              UserRole[]
+  auditLogs          AuditLog[]
+  passTokens         PassToken[]
+  blacklistedTokens  TokenBlacklist[]
+  sessions           Session[]
+  emailVerifications EmailVerification[]
 
   @@unique([tenantId, loginId])
   @@unique([tenantId, email])
   @@map("users")
+}
+
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  level       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+  parent   Organization?  @relation("OrganizationHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentId String?
+  children Organization[] @relation("OrganizationHierarchy")
+  users    User[]
+
+  @@map("organizations")
 }
 
 // -------------------
@@ -216,3 +242,82 @@ model RefreshToken {
 
   @@map("refresh_tokens")
 }
+
+// -------------------
+// Token Blacklist (Security)
+// -------------------
+
+model TokenBlacklist {
+  id         String   @id @default(uuid())
+  jti        String   @unique
+  userId     String
+  tokenType  String
+  token      String?
+  expiresAt  DateTime
+  revokedAt  DateTime @default(now()) @map("revoked_at")
+  reason     String?
+  revokedBy  String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([jti])
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([tokenType])
+  @@map("token_blacklist")
+}
+
+
+// -------------------
+// Session Management
+// -------------------
+
+model Session {
+  id            String    @id @default(uuid())
+  userId        String
+  sessionToken  String    @unique
+  deviceInfo    String?
+  browser       String?
+  os            String?
+  ipAddress     String?
+  loginTime     DateTime  @default(now()) @map("login_time")
+  lastActivity  DateTime  @default(now()) @map("last_activity")
+  expiresAt     DateTime  @map("expires_at")
+  isActive      Boolean   @default(true) @map("is_active")
+  revokedAt     DateTime? @map("revoked_at")
+  revokeReason  String?   @map("revoke_reason")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// -------------------
+// Email Verification
+// -------------------
+
+model EmailVerification {
+  id          String    @id @default(uuid())
+  userId      String
+  token       String    @unique
+  email       String
+  expiresAt   DateTime  @map("expires_at")
+  verifiedAt  DateTime? @map("verified_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userId])
+  @@index([email])
+  @@map("email_verifications")
+}
+
