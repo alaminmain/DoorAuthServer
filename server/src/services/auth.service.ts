@@ -2,14 +2,20 @@ import { PrismaClient, User } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Logger } from '../utils/Logger';
+import { SessionService } from './session.service';
+import { EmailVerificationService } from './emailVerification.service';
 
 const prisma = new PrismaClient();
 const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 const MAX_LOGIN_ATTEMPTS = parseInt(process.env.MAX_LOGIN_ATTEMPTS || '5');
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+
+const sessionService = new SessionService();
+const emailVerificationService = new EmailVerificationService();
 
 export class AuthService {
-  async register(data: any) {
+  async register(data: any, ipAddress?: string, userAgent?: string) {
     const { email, password, tenantId, userName } = data;
 
     Logger.info('Registering new user', email);
@@ -40,19 +46,49 @@ export class AuthService {
         passwordHash,
         tenantId,
         isApproved: true,
+        emailVerified: false, // Email not verified yet
       },
     });
 
-    // 4. Generate Token
+    // 4. Send Email Verification
+    try {
+      await emailVerificationService.sendVerificationEmail(newUser.id, BASE_URL);
+      Logger.info('Verification email sent', { userId: newUser.id, email });
+    } catch (error: any) {
+      Logger.error('Failed to send verification email', {
+        error: error.message,
+        userId: newUser.id,
+      });
+      // Don't fail registration if email fails
+    }
+
+    // 5. Generate Token
     const token = this.generateToken(newUser);
+
+    // 6. Create Session
+    try {
+      const sessionToken = await sessionService.createSession({
+        userId: newUser.id,
+        ipAddress,
+        userAgent,
+      });
+      Logger.info('Session created for new user', { userId: newUser.id, sessionToken: sessionToken.substring(0, 10) + '...' });
+    } catch (error: any) {
+      Logger.error('Failed to create session', { error: error.message });
+      // Don't fail registration if session creation fails
+    }
 
     // Remove passwordHash from response
     const { passwordHash: _, ...userWithoutPassword } = newUser;
 
-    return { user: userWithoutPassword, token };
+    return {
+      user: userWithoutPassword,
+      token,
+      message: 'Registration successful. Please check your email to verify your account.',
+    };
   }
 
-  async login(credentials: any) {
+  async login(credentials: any, ipAddress?: string, userAgent?: string) {
     const { email, password, twoFactorToken } = credentials;
     Logger.info('User login attempt', email);
 
@@ -157,20 +193,50 @@ export class AuthService {
     // 7. Generate Token
     const token = this.generateToken(user);
 
+    // 8. Create Session
+    let sessionToken: string | null = null;
+    try {
+      sessionToken = await sessionService.createSession({
+        userId: user.id,
+        ipAddress,
+        userAgent,
+      });
+      Logger.info('Session created on login', {
+        userId: user.id,
+        email,
+        sessionToken: sessionToken.substring(0, 10) + '...',
+      });
+    } catch (error: any) {
+      Logger.error('Failed to create session on login', {
+        error: error.message,
+        userId: user.id,
+      });
+      // Don't fail login if session creation fails
+    }
+
     const { passwordHash: _, ...userWithoutPassword } = user;
 
     Logger.info('Successful login', { userId: user.id, email });
 
-    return { user: userWithoutPassword, token };
+    return {
+      user: userWithoutPassword,
+      token,
+      sessionToken,
+      emailVerified: user.emailVerified,
+    };
   }
 
   private generateToken(user: User): string {
+    const crypto = require('crypto');
+    const jti = crypto.randomUUID(); // Generate unique JWT ID
+
     return jwt.sign(
       {
         userId: user.id,
         tenantId: user.tenantId,
         email: user.email,
         roles: [], // TODO: Fetch roles
+        jti, // JWT ID for token blacklisting
       },
       JWT_SECRET,
       { expiresIn: '1h' }

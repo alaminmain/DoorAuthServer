@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
+import { EmailVerificationController } from '../controllers/emailVerification.controller';
+import { authLimiter, registerLimiter } from '../middlewares/rateLimiter';
+import { authMiddleware } from '../middlewares/authMiddleware';
 
 const router = Router();
 const authController = new AuthController();
+const emailVerificationController = new EmailVerificationController();
 
 /**
  * @swagger
@@ -63,8 +67,10 @@ const authController = new AuthController();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *       429:
+ *         description: Too many registration attempts
  */
-router.post('/register', authController.register.bind(authController));
+router.post('/register', registerLimiter, authController.register.bind(authController));
 
 /**
  * @swagger
@@ -129,8 +135,10 @@ router.post('/register', authController.register.bind(authController));
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *       429:
+ *         description: Too many login attempts
  */
-router.post('/login', authController.login.bind(authController));
+router.post('/login', authLimiter, authController.login.bind(authController));
 
 /**
  * @swagger
@@ -156,3 +164,10 @@ router.post('/login', authController.login.bind(authController));
 router.post('/logout', authController.logout.bind(authController));
 
 export default router;
+
+// Email Verification Routes
+router.post('/verify-email', emailVerificationController.verifyEmail.bind(emailVerificationController));
+router.get('/verify-email/:token', emailVerificationController.verifyEmailViaLink.bind(emailVerificationController));
+router.post('/resend-verification', authMiddleware, emailVerificationController.resendVerification.bind(emailVerificationController));
+router.get('/verification-status', authMiddleware, emailVerificationController.getVerificationStatus.bind(emailVerificationController));
+

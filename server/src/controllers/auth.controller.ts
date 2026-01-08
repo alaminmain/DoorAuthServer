@@ -7,8 +7,11 @@ const authService = new AuthService();
 export class AuthController {
   async register(req: Request, res: Response) {
     try {
-      const result = await authService.register(req.body);
-      res.status(201).json(ApiResponse.success(result, 'User registered successfully'));
+      const ipAddress = req.ip || req.socket.remoteAddress;
+      const userAgent = req.headers['user-agent'];
+
+      const result = await authService.register(req.body, ipAddress, userAgent);
+      res.status(201).json(ApiResponse.success(result, result.message || 'User registered successfully'));
     } catch (error: any) {
       res.status(400).json(ApiResponse.error(error.message));
     }
@@ -16,9 +19,11 @@ export class AuthController {
 
   async login(req: Request, res: Response) {
     try {
-      const result = await authService.login(req.body);
+      const ipAddress = req.ip || req.socket.remoteAddress;
+      const userAgent = req.headers['user-agent'];
 
-      // Set HttpOnly cookie for SSO/OAuth
+      const result = await authService.login(req.body, ipAddress, userAgent);
+
       // Set HttpOnly cookie for SSO/OAuth
       res.cookie('access_token', result.token, {
         httpOnly: true,
@@ -36,6 +41,36 @@ export class AuthController {
 
   async logout(req: Request, res: Response) {
     try {
+      // Get the token from the request
+      const token = req.headers.authorization?.split(' ')[1] || req.cookies?.access_token;
+
+      // If token exists, blacklist it
+      if (token) {
+        const jwt = require('jsonwebtoken');
+        const { TokenBlacklistService } = require('../services/tokenBlacklist.service');
+        const tokenBlacklistService = new TokenBlacklistService();
+
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret') as any;
+
+          // Blacklist the token if it has a JTI
+          if (decoded.jti) {
+            await tokenBlacklistService.blacklistToken({
+              jti: decoded.jti,
+              userId: decoded.userId,
+              tokenType: 'access',
+              expiresAt: new Date(decoded.exp * 1000), // Convert exp to Date
+              reason: 'logout',
+              ipAddress: req.ip,
+              userAgent: req.headers['user-agent'],
+            });
+          }
+        } catch (err) {
+          // Token might be invalid or expired, but we still want to clear cookies
+          console.error('Error blacklisting token on logout:', err);
+        }
+      }
+
       // Clear the access_token cookie
       res.clearCookie('access_token', {
         httpOnly: true,
