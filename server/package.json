@@ -10,6 +10,7 @@
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
     "generate-certs": "node scripts/generate-certs.js",
+    "seed:admin": "ts-node src/scripts/seed-admin.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -23,6 +24,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
     "http-proxy-middleware": "^3.0.5",
     "jose": "^6.1.3",
     "jsonwebtoken": "^9.0.3",
@@ -33,6 +35,7 @@
     "speakeasy": "^2.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "ua-parser-js": "^2.0.7",
     "zod": "^3.22.4"
   },
   "devDependencies": {
