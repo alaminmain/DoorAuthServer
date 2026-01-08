@@ -21,10 +21,11 @@ model Tenant {
   brandingConfig Json?
   createdAt      DateTime      @default(now()) @map("created_at")
 
-  users        User[]
-  applications Application[]
-  roles        Role[]
-  auditLogs    AuditLog[]
+  users         User[]
+  applications  Application[]
+  roles         Role[]
+  auditLogs     AuditLog[]
+  organizations Organization[]
 
   @@map("tenants")
 }
@@ -49,15 +50,39 @@ model User {
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
 
-  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  tenantId   String
-  roles      UserRole[]
-  auditLogs  AuditLog[]
-  passTokens PassToken[]
+  tenant         Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId       String
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  organizationId String?
+  roles          UserRole[]
+  auditLogs      AuditLog[]
+  passTokens     PassToken[]
 
   @@unique([tenantId, loginId])
   @@unique([tenantId, email])
   @@map("users")
+}
+
+// -------------------
+// Organization Tree Model
+// -------------------
+
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  level       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId String
+  parent   Organization? @relation("OrgHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentId String?
+  children Organization[] @relation("OrgHierarchy")
+  users    User[]
+
+  @@map("organizations")
 }
 
 // -------------------
