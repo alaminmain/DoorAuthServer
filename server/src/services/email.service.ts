@@ -2,30 +2,34 @@ import nodemailer from 'nodemailer';
 import { Logger } from '../utils/Logger';
 
 export class EmailService {
-    private transporter: nodemailer.Transporter;
+  private transporter: nodemailer.Transporter;
 
-    constructor() {
-        this.transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST || 'live.smtp.mailtrap.io',
-            port: parseInt(process.env.MAIL_PORT || '587'),
-            auth: {
-                user: process.env.MAIL_USER || 'api',
-                pass: process.env.MAIL_PASS || '',
-            },
-        });
-    }
+  constructor() {
+    // Configure Brevo SMTP
+    this.transporter = nodemailer.createTransport({
+      host: process.env.BREVO_SMTP_SERVER || 'smtp-relay.brevo.com',
+      port: parseInt(process.env.BREVO_SMTP_PORT || '587'),
+      secure: false, // Use TLS
+      auth: {
+        user: process.env.BREVO_SMTP_LOGIN,
+        pass: process.env.BREVO_SMTP_KEY,
+      },
+    });
 
-    /**
-     * Send password reset email
-     */
-    async sendPasswordResetEmail(to: string, resetToken: string, userName?: string) {
-        const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+    Logger.info('Email service initialized with Brevo SMTP');
+  }
 
-        const mailOptions = {
-            from: process.env.MAIL_FROM || 'noreply@doorauthserver.com',
-            to,
-            subject: 'Password Reset Request - DoorAuthServer',
-            html: `
+  /**
+   * Send password reset email
+   */
+  async sendPasswordResetEmail(to: string, resetToken: string, userName?: string) {
+    const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+
+    const mailOptions = {
+      from: `${process.env.EMAIL_FROM_NAME || 'DoorAuth'} <${process.env.EMAIL_FROM || 'noreply@doorauth.com'}>`,
+      to,
+      subject: 'Password Reset Request - DoorAuthServer',
+      html: `
         <!DOCTYPE html>
         <html>
         <head>
@@ -62,7 +66,7 @@ export class EmailService {
         </body>
         </html>
       `,
-            text: `
+      text: `
         Password Reset Request
         
         Hello ${userName || 'User'},
@@ -78,27 +82,27 @@ export class EmailService {
         
         © ${new Date().getFullYear()} DoorAuthServer
       `,
-        };
+    };
 
-        try {
-            const info = await this.transporter.sendMail(mailOptions);
-            Logger.info('Password reset email sent', { to, messageId: info.messageId });
-            return info;
-        } catch (error: any) {
-            Logger.error('Failed to send password reset email', error);
-            throw new Error('Failed to send email');
-        }
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      Logger.info('Password reset email sent', { to, messageId: info.messageId });
+      return info;
+    } catch (error: any) {
+      Logger.error('Failed to send password reset email', error);
+      throw new Error('Failed to send email');
     }
+  }
 
-    /**
-     * Send welcome email
-     */
-    async sendWelcomeEmail(to: string, userName: string) {
-        const mailOptions = {
-            from: process.env.MAIL_FROM || 'noreply@doorauthserver.com',
-            to,
-            subject: 'Welcome to DoorAuthServer! 🎉',
-            html: `
+  /**
+   * Send welcome email
+   */
+  async sendWelcomeEmail(to: string, userName: string) {
+    const mailOptions = {
+      from: `${process.env.EMAIL_FROM_NAME || 'DoorAuth'} <${process.env.EMAIL_FROM || 'noreply@doorauth.com'}>`,
+      to,
+      subject: 'Welcome to DoorAuthServer! 🎉',
+      html: `
         <!DOCTYPE html>
         <html>
         <head>
@@ -133,29 +137,29 @@ export class EmailService {
         </body>
         </html>
       `,
-        };
+    };
 
-        try {
-            const info = await this.transporter.sendMail(mailOptions);
-            Logger.info('Welcome email sent', { to, messageId: info.messageId });
-            return info;
-        } catch (error: any) {
-            Logger.error('Failed to send welcome email', error);
-            // Don't throw error for welcome emails - it's not critical
-        }
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      Logger.info('Welcome email sent', { to, messageId: info.messageId });
+      return info;
+    } catch (error: any) {
+      Logger.error('Failed to send welcome email', error);
+      // Don't throw error for welcome emails - it's not critical
     }
+  }
 
-    /**
-     * Verify email configuration
-     */
-    async verifyConnection() {
-        try {
-            await this.transporter.verify();
-            Logger.info('Email service connection verified');
-            return true;
-        } catch (error: any) {
-            Logger.error('Email service connection failed', error);
-            return false;
-        }
+  /**
+   * Verify email configuration
+   */
+  async verifyConnection() {
+    try {
+      await this.transporter.verify();
+      Logger.info('Email service connection verified');
+      return true;
+    } catch (error: any) {
+      Logger.error('Email service connection failed', error);
+      return false;
     }
+  }
 }

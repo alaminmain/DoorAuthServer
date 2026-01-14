@@ -141,7 +141,10 @@ export interface RegisterData {
 
 export interface AuthResponse {
     token: string;
+    sessionToken?: string;
+    refreshToken?: string;
     user: User;
+    emailVerified?: boolean;
 }
 
 // Dashboard stats

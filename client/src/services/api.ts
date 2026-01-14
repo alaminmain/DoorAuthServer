@@ -1,10 +1,13 @@
-import axios, { type AxiosInstance, type AxiosError } from 'axios';
+import axios, { type AxiosInstance, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import type { ApiResponse } from '../types';
-
-
 
 class ApiService {
     private api: AxiosInstance;
+    private isRefreshing = false;
+    private failedQueue: Array<{
+        resolve: (value?: any) => void;
+        reject: (reason?: any) => void;
+    }> = [];
 
     constructor() {
         this.api = axios.create({
@@ -15,31 +18,141 @@ class ApiService {
             },
         });
 
-        // Request interceptor to add auth token
+        // Request interceptor to add auth token and session token
         this.api.interceptors.request.use(
             (config) => {
                 const token = localStorage.getItem('token');
+                const sessionToken = localStorage.getItem('sessionToken');
+
                 if (token) {
                     config.headers.Authorization = `Bearer ${token}`;
                 }
+
+                if (sessionToken) {
+                    config.headers['x-session-token'] = sessionToken;
+                }
+
                 return config;
             },
             (error) => Promise.reject(error)
         );
 
-        // Response interceptor for error handling
+        // Response interceptor for error handling and token refresh
         this.api.interceptors.response.use(
             (response) => response,
-            (error: AxiosError<ApiResponse>) => {
-                if (error.response?.status === 401) {
-                    // Unauthorized - clear token and redirect to login
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    window.location.href = '/login';
+            async (error: AxiosError<ApiResponse>) => {
+                const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+                // If error is 401 and we haven't retried yet
+                if (error.response?.status === 401 && !originalRequest._retry) {
+                    // Check if the error is due to expired token (not invalid token)
+                    const errorMessage = error.response?.data?.message || '';
+
+                    if (errorMessage.includes('expired') || errorMessage.includes('Session expired')) {
+                        // Token or session expired, try to refresh
+                        if (this.isRefreshing) {
+                            // If already refreshing, queue this request
+                            return new Promise((resolve, reject) => {
+                                this.failedQueue.push({ resolve, reject });
+                            })
+                                .then(() => {
+                                    return this.api(originalRequest);
+                                })
+                                .catch((err) => {
+                                    return Promise.reject(err);
+                                });
+                        }
+
+                        originalRequest._retry = true;
+                        this.isRefreshing = true;
+
+                        try {
+                            // Attempt to refresh the token
+                            const refreshToken = localStorage.getItem('refreshToken');
+
+                            if (!refreshToken) {
+                                throw new Error('No refresh token available');
+                            }
+
+                            // Call refresh endpoint
+                            const response = await axios.post<ApiResponse<{ token: string; sessionToken: string }>>(
+                                'https://localhost:3000/api/auth/refresh',
+                                { refreshToken },
+                                { withCredentials: true }
+                            );
+
+                            if (response.data.success && response.data.data) {
+                                const { token, sessionToken } = response.data.data;
+
+                                // Store new tokens
+                                localStorage.setItem('token', token);
+                                if (sessionToken) {
+                                    localStorage.setItem('sessionToken', sessionToken);
+                                }
+
+                                // Store token expiry time (1 hour from now)
+                                const expiryTime = Date.now() + (60 * 60 * 1000); // 1 hour
+                                localStorage.setItem('tokenExpiry', expiryTime.toString());
+
+                                // Process queued requests
+                                this.processQueue(null);
+
+                                // Retry original request
+                                return this.api(originalRequest);
+                            } else {
+                                throw new Error('Token refresh failed');
+                            }
+                        } catch (refreshError) {
+                            // Refresh failed, clear tokens and redirect to login
+                            this.processQueue(refreshError);
+                            this.clearAuthData();
+                            window.location.href = '/login';
+                            return Promise.reject(refreshError);
+                        } finally {
+                            this.isRefreshing = false;
+                        }
+                    } else {
+                        // Invalid token or other 401 error, clear and redirect
+                        this.clearAuthData();
+                        window.location.href = '/login';
+                    }
                 }
+
                 return Promise.reject(error);
             }
         );
+    }
+
+    private processQueue(error: any) {
+        this.failedQueue.forEach((promise) => {
+            if (error) {
+                promise.reject(error);
+            } else {
+                promise.resolve();
+            }
+        });
+
+        this.failedQueue = [];
+    }
+
+    private clearAuthData() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('sessionToken');
+        localStorage.removeItem('tokenExpiry');
+        localStorage.removeItem('user');
+    }
+
+    // Check if token is expired or about to expire (within 5 minutes)
+    isTokenExpired(): boolean {
+        const expiryTime = localStorage.getItem('tokenExpiry');
+        if (!expiryTime) return true;
+
+        const expiry = parseInt(expiryTime, 10);
+        const now = Date.now();
+        const fiveMinutes = 5 * 60 * 1000;
+
+        return now >= (expiry - fiveMinutes);
     }
 
     async get<T>(url: string): Promise<ApiResponse<T>> {

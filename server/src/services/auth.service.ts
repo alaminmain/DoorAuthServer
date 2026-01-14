@@ -65,12 +65,13 @@ export class AuthService {
     // 5. Generate Token
     const token = this.generateToken(newUser);
 
-    // 6. Create Session
+    // 6. Create Session (30 minutes)
     try {
       const sessionToken = await sessionService.createSession({
         userId: newUser.id,
         ipAddress,
         userAgent,
+        expiresInHours: 0.5, // 30 minutes
       });
       Logger.info('Session created for new user', { userId: newUser.id, sessionToken: sessionToken.substring(0, 10) + '...' });
     } catch (error: any) {
@@ -193,13 +194,14 @@ export class AuthService {
     // 7. Generate Token
     const token = this.generateToken(user);
 
-    // 8. Create Session
+    // 8. Create Session (30 minutes)
     let sessionToken: string | null = null;
     try {
       sessionToken = await sessionService.createSession({
         userId: user.id,
         ipAddress,
         userAgent,
+        expiresInHours: 0.5, // 30 minutes
       });
       Logger.info('Session created on login', {
         userId: user.id,
