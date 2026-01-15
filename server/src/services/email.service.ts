@@ -95,6 +95,78 @@ export class EmailService {
   }
 
   /**
+   * Send email verification
+   */
+  async sendVerificationEmail(to: string, verificationUrl: string, userName?: string) {
+    const mailOptions = {
+      from: `${process.env.EMAIL_FROM_NAME || 'DoorAuth'} <${process.env.EMAIL_FROM || 'noreply@doorauth.com'}>`,
+      to,
+      subject: 'Verify Your Email - DoorAuthServer',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+            .url-box { background: #fff; padding: 10px; border-radius: 5px; word-break: break-all; margin: 15px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔐 Verify Your Email</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${userName || 'there'},</p>
+              <p>Thank you for registering with DoorAuth! Please verify your email address to complete your registration.</p>
+              <p style="text-align: center;">
+                <a href="${verificationUrl}" class="button">Verify Email Address</a>
+              </p>
+              <p>Or copy and paste this link into your browser:</p>
+              <div class="url-box">${verificationUrl}</div>
+              <p><strong>This link will expire in 24 hours.</strong></p>
+              <p>If you didn't create an account, you can safely ignore this email.</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} DoorAuthServer. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+        Verify Your Email
+        
+        Hello ${userName || 'there'},
+        
+        Thank you for registering with DoorAuth! Please verify your email address by clicking the link below:
+        
+        ${verificationUrl}
+        
+        This link will expire in 24 hours.
+        
+        If you didn't create an account, you can safely ignore this email.
+        
+        © ${new Date().getFullYear()} DoorAuthServer
+      `,
+    };
+
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      Logger.info('Verification email sent', { to, messageId: info.messageId });
+      return info;
+    } catch (error: any) {
+      Logger.error('Failed to send verification email', error);
+      throw new Error('Failed to send email');
+    }
+  }
+
+  /**
    * Send welcome email
    */
   async sendWelcomeEmail(to: string, userName: string) {

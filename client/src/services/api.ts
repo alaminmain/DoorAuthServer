@@ -24,6 +24,12 @@ class ApiService {
                 const token = localStorage.getItem('token');
                 const sessionToken = localStorage.getItem('sessionToken');
 
+                console.log('[API Request]', config.url, {
+                    hasToken: !!token,
+                    hasSessionToken: !!sessionToken,
+                    token: token ? token.substring(0, 20) + '...' : null
+                });
+
                 if (token) {
                     config.headers.Authorization = `Bearer ${token}`;
                 }
@@ -45,76 +51,91 @@ class ApiService {
 
                 // If error is 401 and we haven't retried yet
                 if (error.response?.status === 401 && !originalRequest._retry) {
-                    // Check if the error is due to expired token (not invalid token)
                     const errorMessage = error.response?.data?.message || '';
 
-                    if (errorMessage.includes('expired') || errorMessage.includes('Session expired')) {
-                        // Token or session expired, try to refresh
-                        if (this.isRefreshing) {
-                            // If already refreshing, queue this request
-                            return new Promise((resolve, reject) => {
-                                this.failedQueue.push({ resolve, reject });
-                            })
-                                .then(() => {
-                                    return this.api(originalRequest);
-                                })
-                                .catch((err) => {
-                                    return Promise.reject(err);
-                                });
-                        }
+                    // Don't try to refresh for these errors - they indicate the credentials are invalid
+                    const shouldNotRefresh =
+                        errorMessage.includes('Invalid credentials') ||
+                        errorMessage.includes('No token provided') ||
+                        errorMessage.includes('Invalid token type');
 
-                        originalRequest._retry = true;
-                        this.isRefreshing = true;
-
-                        try {
-                            // Attempt to refresh the token
-                            const refreshToken = localStorage.getItem('refreshToken');
-
-                            if (!refreshToken) {
-                                throw new Error('No refresh token available');
-                            }
-
-                            // Call refresh endpoint
-                            const response = await axios.post<ApiResponse<{ token: string; sessionToken: string }>>(
-                                'https://localhost:3000/api/auth/refresh',
-                                { refreshToken },
-                                { withCredentials: true }
-                            );
-
-                            if (response.data.success && response.data.data) {
-                                const { token, sessionToken } = response.data.data;
-
-                                // Store new tokens
-                                localStorage.setItem('token', token);
-                                if (sessionToken) {
-                                    localStorage.setItem('sessionToken', sessionToken);
-                                }
-
-                                // Store token expiry time (1 hour from now)
-                                const expiryTime = Date.now() + (60 * 60 * 1000); // 1 hour
-                                localStorage.setItem('tokenExpiry', expiryTime.toString());
-
-                                // Process queued requests
-                                this.processQueue(null);
-
-                                // Retry original request
-                                return this.api(originalRequest);
-                            } else {
-                                throw new Error('Token refresh failed');
-                            }
-                        } catch (refreshError) {
-                            // Refresh failed, clear tokens and redirect to login
-                            this.processQueue(refreshError);
-                            this.clearAuthData();
-                            window.location.href = '/login';
-                            return Promise.reject(refreshError);
-                        } finally {
-                            this.isRefreshing = false;
-                        }
-                    } else {
-                        // Invalid token or other 401 error, clear and redirect
+                    if (shouldNotRefresh) {
+                        // Invalid credentials or other non-refreshable error, clear and redirect
                         this.clearAuthData();
                         window.location.href = '/login';
+                        return Promise.reject(error);
+                    }
+
+                    // For all other 401 errors (expired token, expired session, revoked token, etc.)
+                    // try to refresh the token
+                    if (this.isRefreshing) {
+                        // If already refreshing, queue this request
+                        return new Promise((resolve, reject) => {
+                            this.failedQueue.push({ resolve, reject });
+                        })
+                            .then(() => {
+                                return this.api(originalRequest);
+                            })
+                            .catch((err) => {
+                                return Promise.reject(err);
+                            });
+                    }
+
+                    originalRequest._retry = true;
+                    this.isRefreshing = true;
+
+                    try {
+                        // Attempt to refresh the token
+                        const refreshToken = localStorage.getItem('refreshToken');
+
+                        if (!refreshToken) {
+                            // No refresh token available, clear auth and redirect
+                            console.log('Session expired, redirecting to login...');
+                            this.clearAuthData();
+                            // Use setTimeout to allow the current call stack to complete
+                            setTimeout(() => {
+                                window.location.href = '/login';
+                            }, 100);
+                            // Return a promise that never resolves to prevent further processing
+                            return new Promise(() => { });
+                        }
+
+                        // Call refresh endpoint
+                        const response = await axios.post<ApiResponse<{ token: string; sessionToken: string }>>(
+                            'https://localhost:3000/api/auth/refresh',
+                            { refreshToken },
+                            { withCredentials: true }
+                        );
+
+                        if (response.data.success && response.data.data) {
+                            const { token, sessionToken } = response.data.data;
+
+                            // Store new tokens
+                            localStorage.setItem('token', token);
+                            if (sessionToken) {
+                                localStorage.setItem('sessionToken', sessionToken);
+                            }
+
+                            // Store token expiry time (1 hour from now)
+                            const expiryTime = Date.now() + (60 * 60 * 1000); // 1 hour
+                            localStorage.setItem('tokenExpiry', expiryTime.toString());
+
+                            // Process queued requests
+                            this.processQueue(null);
+
+                            // Retry original request
+                            return this.api(originalRequest);
+                        } else {
+                            throw new Error('Token refresh failed');
+                        }
+                    } catch (refreshError) {
+                        // Refresh failed, clear tokens and redirect to login
+                        this.processQueue(refreshError);
+                        this.clearAuthData();
+                        window.location.href = '/login';
+                        return Promise.reject(refreshError);
+                    } finally {
+                        this.isRefreshing = false;
                     }
                 }
 

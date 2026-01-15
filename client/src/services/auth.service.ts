@@ -5,6 +5,12 @@ export const authService = {
     async login(credentials: LoginCredentials): Promise<AuthResponse> {
         const response = await apiService.post<AuthResponse>('/auth/login', credentials);
         if (response.success && response.data) {
+            console.log('[Auth Service] Login successful, storing tokens:', {
+                hasToken: !!response.data.token,
+                hasRefreshToken: !!response.data.refreshToken,
+                hasSessionToken: !!response.data.sessionToken,
+            });
+
             // Store access token
             localStorage.setItem('token', response.data.token);
 
@@ -24,6 +30,8 @@ export const authService = {
 
             // Store user data
             localStorage.setItem('user', JSON.stringify(response.data.user));
+
+            console.log('[Auth Service] Tokens stored in localStorage');
 
             return response.data;
         }

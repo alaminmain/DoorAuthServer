@@ -187,7 +187,7 @@ export default function Sessions() {
                 <CardContent className="text-blue-800">
                     <p>
                         If you see any sessions that you don't recognize, revoke them immediately and change your password.
-                        Sessions automatically expire after 30 minutes of inactivity.
+                        Sessions automatically expire after 1 hour of inactivity.
                     </p>
                 </CardContent>
             </Card>

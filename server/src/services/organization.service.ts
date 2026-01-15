@@ -306,7 +306,7 @@ export class OrganizationService {
 
             visited.add(currentId);
 
-            const org = await prisma.organization.findUnique({
+            const org: { parentId: string | null } | null = await prisma.organization.findUnique({
                 where: { id: currentId },
                 select: { parentId: true }
             });

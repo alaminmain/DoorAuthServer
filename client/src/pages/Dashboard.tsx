@@ -93,8 +93,11 @@ export default function Dashboard() {
 
                 setStats(uiStats);
                 setActivity(data.recentActivity);
-            } catch (error) {
-                console.error('Failed to load dashboard stats', error);
+            } catch (error: any) {
+                // Don't log error if it's a session expiration (redirect is happening)
+                if (error?.message !== 'Session expired, please login again') {
+                    console.error('Failed to load dashboard stats', error);
+                }
             } finally {
                 setLoading(false);
             }

@@ -120,8 +120,13 @@ export class AuthController {
       const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
       try {
-        // Verify the refresh token (currently same as access token)
+        // Verify the refresh token
         const decoded = jwt.verify(refreshToken, JWT_SECRET) as any;
+
+        // Verify it's actually a refresh token
+        if (decoded.type !== 'refresh') {
+          return res.status(401).json(ApiResponse.error('Invalid token type'));
+        }
 
         // Get user from database
         const { PrismaClient } = require('@prisma/client');
@@ -168,7 +173,7 @@ export class AuthController {
             userId: user.id,
             ipAddress,
             userAgent,
-            expiresInHours: 0.5, // 30 minutes
+            expiresInHours: 1, // 1 hour - same as access token
           });
         } catch (error: any) {
           console.error('Failed to create session on refresh:', error);

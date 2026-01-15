@@ -9,7 +9,8 @@ import {
     Settings,
     ChevronLeft,
     ChevronRight,
-    ShieldCheck
+    ShieldCheck,
+    Activity
 } from 'lucide-react';
 import { cn } from '../../utils/helpers';
 
@@ -26,6 +27,7 @@ const navItems = [
     { label: 'Menu Builder', path: '/menus', icon: MenuSquare },
     { label: 'Users', path: '/users', icon: Users },
     { label: 'User Roles', path: '/user-roles', icon: ShieldCheck },
+    { label: 'Sessions', path: '/sessions', icon: Activity },
     { label: 'Settings', path: '/settings', icon: Settings },
 ];
 

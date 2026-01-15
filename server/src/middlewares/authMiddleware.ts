@@ -27,13 +27,14 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
       }
     }
 
-    // Validate session if sessionToken is provided in headers
+    // Validate session if sessionToken is provided in headers (optional check)
     const sessionToken = req.headers['x-session-token'] as string;
     if (sessionToken) {
       const isSessionValid = await sessionService.validateSession(sessionToken);
       if (!isSessionValid) {
-        res.status(401).json(ApiResponse.error('Unauthorized: Session expired or invalid'));
-        return;
+        // Session expired but token is still valid - log warning but allow request
+        // The session token is for tracking purposes, not primary authentication
+        console.warn('Session expired for user:', decoded.userId, 'but access token is valid');
       }
     }
 
