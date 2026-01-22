@@ -22,6 +22,13 @@ export interface User {
     lastLoginTime?: Date;
     createdAt: Date;
     updatedAt: Date;
+    roles?: Array<{
+        role: {
+            id: string;
+            name: string;
+            isSystem?: boolean;
+        };
+    }>;
 }
 
 // Tenant types
@@ -170,4 +177,38 @@ export interface ChangePasswordDto {
 
 export interface ChangeLockStatusDto {
     isLocked: boolean;
+}
+
+// Organization types
+export interface Organization {
+    id: string;
+    tenantId: string;
+    name: string;
+    description?: string;
+    level: number;
+    parentId?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    parent?: {
+        id: string;
+        name: string;
+    };
+    children?: Organization[];
+    users?: User[];
+    _count?: {
+        children: number;
+        users: number;
+    };
+}
+
+export interface CreateOrganizationDto {
+    name: string;
+    description?: string;
+    parentId?: string;
+}
+
+export interface UpdateOrganizationDto {
+    name?: string;
+    description?: string;
+    parentId?: string;
 }

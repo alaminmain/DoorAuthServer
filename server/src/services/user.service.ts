@@ -25,6 +25,17 @@ export class UserService {
                 lastLoginTime: true,
                 createdAt: true,
                 updatedAt: true,
+                roles: {
+                    include: {
+                        role: {
+                            select: {
+                                id: true,
+                                name: true,
+                                isSystem: true
+                            }
+                        }
+                    }
+                }
             }
         });
     }

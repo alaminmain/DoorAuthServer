@@ -9,9 +9,11 @@ import {
     Settings,
     ChevronLeft,
     ChevronRight,
-    ShieldCheck
+    ShieldCheck,
+    Network
 } from 'lucide-react';
 import { cn } from '../../utils/helpers';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -20,17 +22,27 @@ interface SidebarProps {
 
 const navItems = [
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { label: 'Tenants', path: '/tenants', icon: Building2 },
+    { label: 'Tenants', path: '/tenants', icon: Building2, superAdminOnly: true }, // Only for Super Admins
     { label: 'Applications', path: '/applications', icon: AppWindow },
     { label: 'Roles & Permissions', path: '/roles', icon: Shield },
     { label: 'Menu Builder', path: '/menus', icon: MenuSquare },
     { label: 'Users', path: '/users', icon: Users },
     { label: 'User Roles', path: '/user-roles', icon: ShieldCheck },
+    { label: 'Organizations', path: '/organizations', icon: Network },
     { label: 'Settings', path: '/settings', icon: Settings },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     const location = useLocation();
+    const { user } = useAuth();
+
+    // Filter nav items based on user role
+    // Super Admins don't have a tenantId (they manage all tenants)
+    // Tenant Admins have a tenantId (they manage their own tenant)
+    const isSuperAdmin = !user?.tenantId;
+    const filteredNavItems = navItems.filter(item =>
+        !item.superAdminOnly || isSuperAdmin
+    );
 
     return (
         <aside
@@ -64,7 +76,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
                 {/* Navigation */}
                 <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-                    {navItems.map((item) => {
+                    {filteredNavItems.map((item) => {
                         const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
                         return (
                             <NavLink

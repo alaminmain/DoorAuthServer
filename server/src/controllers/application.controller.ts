@@ -12,10 +12,16 @@ export class ApplicationController {
      */
     async getAllApplications(req: Request, res: Response) {
         try {
-            const { tenantId } = req.query;
+            // Get tenantId from authenticated user
+            const userTenantId = (req as any).user?.tenantId;
+
+            if (!userTenantId) {
+                res.status(401).json(ApiResponse.error('Unauthorized: No tenant information'));
+                return;
+            }
 
             const applications = await prisma.application.findMany({
-                where: tenantId ? { tenantId: tenantId as string } : undefined,
+                where: { tenantId: userTenantId }, // Always filter by user's tenant
                 select: {
                     id: true,
                     name: true,

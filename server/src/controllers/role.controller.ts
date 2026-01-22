@@ -11,10 +11,16 @@ export class RoleController {
      */
     async getAllRoles(req: Request, res: Response) {
         try {
-            const { tenantId } = req.query;
+            // Get tenantId from authenticated user
+            const userTenantId = (req as any).user?.tenantId;
+
+            if (!userTenantId) {
+                res.status(401).json(ApiResponse.error('Unauthorized: No tenant information'));
+                return;
+            }
 
             const roles = await prisma.role.findMany({
-                where: tenantId ? { tenantId: tenantId as string } : undefined,
+                where: { tenantId: userTenantId }, // Always filter by user's tenant
                 include: {
                     tenant: {
                         select: {

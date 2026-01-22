@@ -8,8 +8,14 @@ const userService = new UserService();
 export class UserController {
     async getAll(req: Request, res: Response) {
         try {
-            const tenantId = req.query.tenantId as string;
-            const result = await userService.getAll(tenantId);
+            // Get tenantId from authenticated user
+            const userTenantId = (req as any).user?.tenantId;
+
+            if (!userTenantId) {
+                return res.status(401).json(ApiResponse.error('Unauthorized: No tenant information'));
+            }
+
+            const result = await userService.getAll(userTenantId); // Always filter by user's tenant
             res.status(200).json(ApiResponse.success(result, 'Users retrieved successfully'));
         } catch (error: any) {
             res.status(500).json(ApiResponse.error(error.message));

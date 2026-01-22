@@ -1,0 +1,1 @@
+src/services/organization.service.ts(309,19): error TS7022: 'org' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.

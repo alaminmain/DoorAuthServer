@@ -14,6 +14,7 @@ import Roles from './pages/Roles';
 import Menus from './pages/Menus';
 import Users from './pages/Users';
 import UserRoles from './pages/UserRoles';
+import Organizations from './pages/Organizations';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
                 <Route path="menus" element={<Menus />} />
                 <Route path="users" element={<Users />} />
                 <Route path="user-roles" element={<UserRoles />} />
+                <Route path="organizations" element={<Organizations />} />
                 <Route path="settings" element={<div className="p-4">Settings (Coming Soon)</div>} />
 
                 <Route path="*" element={<Navigate to="/" replace />} />

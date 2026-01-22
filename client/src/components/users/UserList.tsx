@@ -86,6 +86,29 @@ export default function UserList({ users, onEdit, onDelete, onViewDetails, isLoa
                                 Tenant ID: {user.tenantId.substring(0, 8)}...
                             </div>
                         )}
+
+                        {/* Role Badges */}
+                        {user.roles && user.roles.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                                {user.roles.map((userRole) => {
+                                    const isTenantAdmin = userRole.role.name === 'Tenant Admin';
+                                    return (
+                                        <span
+                                            key={userRole.role.id}
+                                            className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${isTenantAdmin
+                                                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 ring-1 ring-purple-300 dark:ring-purple-700'
+                                                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                }`}
+                                            title={isTenantAdmin ? 'Tenant Administrator' : userRole.role.name}
+                                        >
+                                            {isTenantAdmin && '👑 '}
+                                            {userRole.role.name}
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                        )}
+
                         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${user.isApproved ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>
                                 {user.isApproved ? 'Approved' : 'Pending'}

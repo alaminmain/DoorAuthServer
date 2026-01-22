@@ -7,17 +7,18 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { tenantService } from '../../services/tenant.service';
 
-const userSchema = z.object({
+// Schema for user form - password is optional for edit mode
+const userFormSchema = z.object({
     tenantId: z.string().min(1, 'Tenant is required'),
     loginId: z.string().min(3, 'Login ID must be at least 3 characters'),
     userName: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters').optional().or(z.literal('')),
+    password: z.string().optional(),
     companyName: z.string().optional(),
     designation: z.string().optional(),
 });
 
-type UserFormData = z.infer<typeof userSchema>;
+type UserFormData = z.infer<typeof userFormSchema>;
 
 interface UserFormProps {
     user?: User;
@@ -35,8 +36,10 @@ export default function UserForm({ user, onSubmit, onCancel, isLoading }: UserFo
         handleSubmit,
         formState: { errors },
         reset,
+        setError,
+        watch,
     } = useForm<UserFormData>({
-        resolver: zodResolver(userSchema),
+        resolver: zodResolver(userFormSchema),
         defaultValues: {
             tenantId: '',
             loginId: '',
@@ -63,29 +66,58 @@ export default function UserForm({ user, onSubmit, onCancel, isLoading }: UserFo
     }, []);
 
     useEffect(() => {
-        if (user) {
-            reset({
+        if (user && !loadingConfig) {
+            // Reset form with user data after tenants are loaded
+            console.log('Resetting form with user data:', {
                 tenantId: user.tenantId,
                 loginId: user.loginId,
                 userName: user.userName,
                 email: user.email,
-                password: '', // Don't fill password on edit
+                companyName: user.companyName,
+                designation: user.designation,
+            });
+
+            reset({
+                tenantId: user.tenantId || '',
+                loginId: user.loginId || '',
+                userName: user.userName || '',
+                email: user.email || '',
+                password: '',
                 companyName: user.companyName || '',
                 designation: user.designation || '',
             });
         }
-    }, [user, reset]);
+    }, [user, reset, loadingConfig]);
+
+    // Debug: Watch form values
+    const formValues = watch();
+    useEffect(() => {
+        if (user) {
+            console.log('Current form values:', formValues);
+        }
+    }, [formValues, user]);
+
+    const handleFormSubmit = (data: UserFormData) => {
+        // Validate password for new users
+        if (!user && (!data.password || data.password.length < 6)) {
+            setError('password', {
+                type: 'manual',
+                message: 'Password must be at least 6 characters'
+            });
+            return;
+        }
+
+        // When editing, don't include password if it's empty
+        if (user && !data.password) {
+            const { password, ...dataWithoutPassword } = data;
+            onSubmit(dataWithoutPassword as RegisterData);
+        } else {
+            onSubmit(data as RegisterData);
+        }
+    };
 
     return (
-        <form onSubmit={handleSubmit((data) => {
-            // If editing and password empty, don't send it? 
-            // Actually RegisterData requires password. For edit, backend should handle optional update.
-            // But userService.create calls /register which needs password.
-            // userService.update calls PUT /users/:id.
-            // We need to handle this in parent or make type flexible.
-            // For now, we just pass what we have.
-            onSubmit(data as RegisterData);
-        })} className="space-y-4">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
 
             <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Tenant</label>
@@ -133,11 +165,14 @@ export default function UserForm({ user, onSubmit, onCancel, isLoading }: UserFo
                     placeholder="******"
                     {...register('password')}
                     error={errors.password?.message}
+                    required
                 />
             )}
 
             {user && (
-                <p className="text-xs text-muted-foreground italic">Password change not supported in this form yet.</p>
+                <p className="text-xs text-muted-foreground italic">
+                    Password cannot be changed from this form. Use the user details modal to change password.
+                </p>
             )}
 
             <div className="grid grid-cols-2 gap-4">
