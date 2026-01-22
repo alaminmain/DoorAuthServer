@@ -1,0 +1,1546 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DoorAuth - Production-Ready SSO Authentication System</title>
+    <meta
+      name="description"
+      content="A production-ready, self-hosted Central Authentication & Authorization System (IdP) with Multi-Tenancy, OAuth 2.0/OIDC SSO, RBAC, and Dynamic Menu Management."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="container">
+        <div class="nav-brand">
+          <span class="logo">🚪</span>
+          <span class="brand-name">DoorAuth</span>
+        </div>
+        <ul class="nav-menu">
+          <li><a href="#home" class="nav-link active">Home</a></li>
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li><a href="#quickstart" class="nav-link">Quick Start</a></li>
+          <li><a href="#integration" class="nav-link">Integration</a></li>
+          <li><a href="#api" class="nav-link">API</a></li>
+          <li><a href="#docs" class="nav-link">Docs</a></li>
+        </ul>
+        <a
+          href="https://github.com/yourusername/DoorAuthServer"
+          class="btn-github"
+          target="_blank"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+            />
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+      <div class="hero-background">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+      </div>
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="badge-icon">✨</span>
+            <span>Production Ready • 15 Tests Passing</span>
+          </div>
+          <h1 class="hero-title">
+            Central Authentication System
+            <span class="gradient-text">Built for Scale</span>
+          </h1>
+          <p class="hero-subtitle">
+            A production-ready, self-hosted Identity Provider with
+            Multi-Tenancy, OAuth 2.0/OIDC SSO, RBAC, and Dynamic Menu
+            Management. Deploy in minutes, scale to millions.
+          </p>
+          <div class="hero-buttons">
+            <a href="#quickstart" class="btn btn-primary">
+              <span>Get Started</span>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+            <a href="#integration" class="btn btn-secondary">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              <span>View Docs</span>
+            </a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat">
+              <div class="stat-value">40+</div>
+              <div class="stat-label">API Endpoints</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">100%</div>
+              <div class="stat-label">Test Coverage</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">3</div>
+              <div class="stat-label">Working Examples</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">MIT</div>
+              <div class="stat-label">Open Source</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">How DoorAuth Works</h2>
+          <p class="section-subtitle">
+            Understanding the authentication flow and architecture
+          </p>
+        </div>
+
+        <!-- Architecture Diagram -->
+        <div class="architecture-diagram">
+          <div class="diagram-card">
+            <h3>🏗️ System Architecture</h3>
+            <div class="diagram-content">
+              <div class="arch-layer">
+                <div class="arch-box central">
+                  <div class="arch-icon">🚪</div>
+                  <div class="arch-title">DoorAuth Server</div>
+                  <div class="arch-subtitle">Central Identity Provider</div>
+                  <div class="arch-features">
+                    <span>OAuth 2.0/OIDC</span>
+                    <span>Multi-Tenant</span>
+                    <span>RBAC Engine</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="arch-connector">
+                <div class="connector-line"></div>
+                <div class="connector-label">Secure Authentication</div>
+              </div>
+
+              <div class="arch-layer apps">
+                <div class="arch-box app">
+                  <div class="app-icon">⚡</div>
+                  <div class="app-name">Blazor App</div>
+                  <div class="app-port">:7231</div>
+                </div>
+                <div class="arch-box app">
+                  <div class="app-icon">🌐</div>
+                  <div class="app-name">ASP.NET App</div>
+                  <div class="app-port">:7140</div>
+                </div>
+                <div class="arch-box app">
+                  <div class="app-icon">⚛️</div>
+                  <div class="app-name">React SPA</div>
+                  <div class="app-port">:5175</div>
+                </div>
+                <div class="arch-box app">
+                  <div class="app-icon">📱</div>
+                  <div class="app-name">Your Apps</div>
+                  <div class="app-port">Any</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Authentication Flow -->
+          <div class="diagram-card">
+            <h3>🔄 Authentication Flow</h3>
+            <div class="flow-steps">
+              <div class="flow-step">
+                <div class="flow-number">1</div>
+                <div class="flow-content">
+                  <div class="flow-title">User Visits App</div>
+                  <div class="flow-desc">User accesses your application</div>
+                </div>
+                <div class="flow-arrow">↓</div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-number">2</div>
+                <div class="flow-content">
+                  <div class="flow-title">Redirect to DoorAuth</div>
+                  <div class="flow-desc">App redirects to DoorAuth login</div>
+                </div>
+                <div class="flow-arrow">↓</div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-number">3</div>
+                <div class="flow-content">
+                  <div class="flow-title">User Authenticates</div>
+                  <div class="flow-desc">Credentials + 2FA (optional)</div>
+                </div>
+                <div class="flow-arrow">↓</div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-number">4</div>
+                <div class="flow-content">
+                  <div class="flow-title">Generate Token</div>
+                  <div class="flow-desc">DoorAuth creates JWT token</div>
+                </div>
+                <div class="flow-arrow">↓</div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-number">5</div>
+                <div class="flow-content">
+                  <div class="flow-title">Return to App</div>
+                  <div class="flow-desc">User authenticated & authorized</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Problems We Solve Section -->
+    <section id="problems" class="problems-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Problems We Solve</h2>
+          <p class="section-subtitle">
+            Common authentication challenges, solved out of the box
+          </p>
+        </div>
+
+        <div class="problems-grid">
+          <div class="problem-card">
+            <div class="problem-before">
+              <div class="problem-icon">❌</div>
+              <h4>Without DoorAuth</h4>
+              <ul>
+                <li>Duplicate authentication code in every app</li>
+                <li>Inconsistent security practices</li>
+                <li>Multiple user databases to manage</li>
+                <li>Complex password reset flows</li>
+                <li>Manual session management</li>
+              </ul>
+            </div>
+            <div class="problem-arrow">→</div>
+            <div class="problem-after">
+              <div class="problem-icon">✅</div>
+              <h4>With DoorAuth</h4>
+              <ul>
+                <li>Centralized authentication for all apps</li>
+                <li>Enterprise-grade security by default</li>
+                <li>Single user database, complete isolation</li>
+                <li>Built-in password recovery</li>
+                <li>Automatic session handling</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="problem-scenarios">
+            <div class="scenario-card">
+              <div class="scenario-icon">🏢</div>
+              <h4>SaaS Applications</h4>
+              <p><strong>Challenge:</strong> Managing multiple tenants with isolated data</p>
+              <p><strong>Solution:</strong> Built-in multi-tenancy with complete data isolation, tenant-specific roles, and custom branding per tenant.</p>
+            </div>
+
+            <div class="scenario-card">
+              <div class="scenario-icon">🔐</div>
+              <h4>Enterprise SSO</h4>
+              <p><strong>Challenge:</strong> Users need to login to multiple internal apps</p>
+              <p><strong>Solution:</strong> Single Sign-On across all applications. Login once, access everything. Single logout clears all sessions.</p>
+            </div>
+
+            <div class="scenario-card">
+              <div class="scenario-icon">🎯</div>
+              <h4>Complex Permissions</h4>
+              <p><strong>Challenge:</strong> Different users need different access levels</p>
+              <p><strong>Solution:</strong> Granular RBAC system with role hierarchies, permission-based menu filtering, and API-level authorization.</p>
+            </div>
+
+            <div class="scenario-card">
+              <div class="scenario-icon">🚀</div>
+              <h4>Rapid Development</h4>
+              <p><strong>Challenge:</strong> Building auth from scratch takes weeks</p>
+              <p><strong>Solution:</strong> Deploy DoorAuth in minutes. Integrate with your app in under an hour. Focus on your business logic, not auth.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Special Features Section -->
+    <section id="special-features" class="special-features">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">🌟 Special Features</h2>
+          <p class="section-subtitle">
+            Unique capabilities that set DoorAuth apart
+          </p>
+        </div>
+
+        <div class="special-features-grid">
+          <!-- Smart Menu Generation -->
+          <div class="special-feature-card highlight">
+            <div class="feature-badge">⭐ Unique</div>
+            <div class="feature-header">
+              <div class="feature-icon-large">🎯</div>
+              <h3>Smart Menu Generation</h3>
+              <p class="feature-tagline">Dynamic, permission-based navigation</p>
+            </div>
+
+            <div class="feature-explanation">
+              <h4>What is it?</h4>
+              <p>
+                DoorAuth automatically generates navigation menus based on user permissions. 
+                Each user sees only the menu items they're authorized to access.
+              </p>
+
+              <h4>How it works:</h4>
+              <div class="feature-steps">
+                <div class="mini-step">
+                  <span class="mini-number">1</span>
+                  <span>Define menu structure in DoorAuth</span>
+                </div>
+                <div class="mini-step">
+                  <span class="mini-number">2</span>
+                  <span>Assign permissions to menu items</span>
+                </div>
+                <div class="mini-step">
+                  <span class="mini-number">3</span>
+                  <span>Link permissions to roles</span>
+                </div>
+                <div class="mini-step">
+                  <span class="mini-number">4</span>
+                  <span>API returns filtered menu for user</span>
+                </div>
+              </div>
+
+              <div class="feature-example">
+                <h4>Example API Response:</h4>
+                <div class="code-block-mini">
+                  <pre><code>GET /api/menus/smart
+{
+  "menus": [
+    {
+      "id": 1,
+      "label": "Dashboard",
+      "icon": "📊",
+      "route": "/dashboard",
+      "order": 1
+    },
+    {
+      "id": 2,
+      "label": "Users",
+      "icon": "👥",
+      "route": "/users",
+      "order": 2,
+      "children": [
+        { "label": "View Users", "route": "/users/list" },
+        { "label": "Add User", "route": "/users/add" }
+      ]
+    }
+  ]
+}</code></pre>
+                </div>
+              </div>
+
+              <div class="feature-benefits">
+                <h4>Benefits:</h4>
+                <ul>
+                  <li>✅ No hardcoded menus in your app</li>
+                  <li>✅ Automatic UI updates when permissions change</li>
+                  <li>✅ Consistent navigation across all apps</li>
+                  <li>✅ Hierarchical menu support</li>
+                  <li>✅ Multi-application menu management</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tenant Management -->
+          <div class="special-feature-card highlight">
+            <div class="feature-badge">⭐ Unique</div>
+            <div class="feature-header">
+              <div class="feature-icon-large">🏢</div>
+              <h3>Advanced Tenant Management</h3>
+              <p class="feature-tagline">Enterprise-grade multi-tenancy</p>
+            </div>
+
+            <div class="feature-explanation">
+              <h4>What is it?</h4>
+              <p>
+                Complete tenant isolation system that allows you to serve multiple customers 
+                (tenants) from a single DoorAuth instance with guaranteed data separation.
+              </p>
+
+              <h4>Key Capabilities:</h4>
+              <div class="tenant-features">
+                <div class="tenant-feature">
+                  <div class="tenant-icon">🔒</div>
+                  <div class="tenant-content">
+                    <h5>Complete Data Isolation</h5>
+                    <p>Each tenant's data is completely separated. Users can only access their tenant's data.</p>
+                  </div>
+                </div>
+                <div class="tenant-feature">
+                  <div class="tenant-icon">👥</div>
+                  <div class="tenant-content">
+                    <h5>Tenant-Specific Roles</h5>
+                    <p>Define different roles and permissions for each tenant independently.</p>
+                  </div>
+                </div>
+                <div class="tenant-feature">
+                  <div class="tenant-icon">🎨</div>
+                  <div class="tenant-content">
+                    <h5>Custom Branding</h5>
+                    <p>Each tenant can have custom branding, logos, and themes.</p>
+                  </div>
+                </div>
+                <div class="tenant-feature">
+                  <div class="tenant-icon">📊</div>
+                  <div class="tenant-content">
+                    <h5>Tenant Analytics</h5>
+                    <p>Track usage, users, and activity per tenant.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="feature-example">
+                <h4>Tenant Hierarchy:</h4>
+                <div class="tenant-diagram">
+                  <div class="tenant-box root">
+                    <div class="tenant-name">DoorAuth Instance</div>
+                  </div>
+                  <div class="tenant-children">
+                    <div class="tenant-box">
+                      <div class="tenant-name">Tenant A</div>
+                      <div class="tenant-details">
+                        <div>Users: 150</div>
+                        <div>Apps: 5</div>
+                        <div>Roles: 8</div>
+                      </div>
+                    </div>
+                    <div class="tenant-box">
+                      <div class="tenant-name">Tenant B</div>
+                      <div class="tenant-details">
+                        <div>Users: 300</div>
+                        <div>Apps: 3</div>
+                        <div>Roles: 12</div>
+                      </div>
+                    </div>
+                    <div class="tenant-box">
+                      <div class="tenant-name">Tenant C</div>
+                      <div class="tenant-details">
+                        <div>Users: 75</div>
+                        <div>Apps: 2</div>
+                        <div>Roles: 5</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="feature-benefits">
+                <h4>Perfect for:</h4>
+                <ul>
+                  <li>✅ SaaS applications with multiple customers</li>
+                  <li>✅ Enterprise deployments with divisions</li>
+                  <li>✅ White-label solutions</li>
+                  <li>✅ Multi-organization platforms</li>
+                  <li>✅ Reseller/partner programs</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Special Features -->
+          <div class="special-feature-card">
+            <div class="feature-icon-large">🔄</div>
+            <h3>Token Refresh & Rotation</h3>
+            <p>Automatic token refresh with rotation for enhanced security. Refresh tokens expire after 7 days and rotate on each use.</p>
+          </div>
+
+          <div class="special-feature-card">
+            <div class="feature-icon-large">📧</div>
+            <h3>Email Verification</h3>
+            <p>Built-in email verification system with customizable templates. Secure token-based verification with expiration.</p>
+          </div>
+
+          <div class="special-feature-card">
+            <div class="feature-icon-large">🛡️</div>
+            <h3>Brute Force Protection</h3>
+            <p>Automatic account locking after failed login attempts. Configurable thresholds and lockout duration.</p>
+          </div>
+
+          <div class="special-feature-card">
+            <div class="feature-icon-large">📱</div>
+            <h3>TOTP 2FA</h3>
+            <p>Time-based One-Time Password authentication. Compatible with Google Authenticator, Authy, and other TOTP apps.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Powerful Features Out of the Box</h2>
+          <p class="section-subtitle">
+            Everything you need for enterprise-grade authentication and
+            authorization
+          </p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🔐</div>
+            <h3>OAuth 2.0 / OIDC</h3>
+            <p>
+              Full OpenID Connect provider with PKCE security, authorization
+              code flow, and refresh tokens.
+            </p>
+            <ul class="feature-list">
+              <li>✓ Authorization Code Flow</li>
+              <li>✓ PKCE Security</li>
+              <li>✓ Refresh Token Rotation</li>
+              <li>✓ JWT Token Management</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🏢</div>
+            <h3>Multi-Tenancy</h3>
+            <p>
+              Complete tenant isolation with dedicated data spaces. Perfect for
+              SaaS applications.
+            </p>
+            <ul class="feature-list">
+              <li>✓ Complete Data Isolation</li>
+              <li>✓ Tenant-Specific Roles</li>
+              <li>✓ Custom Branding</li>
+              <li>✓ Scalable Architecture</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <h3>RBAC System</h3>
+            <p>
+              Role-based access control with granular permissions and dynamic
+              menu generation.
+            </p>
+            <ul class="feature-list">
+              <li>✓ Granular Permissions</li>
+              <li>✓ Role Hierarchies</li>
+              <li>✓ Smart Menu Filtering</li>
+              <li>✓ API-Level Authorization</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔄</div>
+            <h3>Single Sign-On</h3>
+            <p>
+              Login once, access all applications. Centralized authentication
+              with SSO logout.
+            </p>
+            <ul class="feature-list">
+              <li>✓ Cross-App Authentication</li>
+              <li>✓ Single Sign-Out</li>
+              <li>✓ Session Management</li>
+              <li>✓ Remember Me</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🛡️</div>
+            <h3>Security First</h3>
+            <p>
+              Enterprise-grade security with 2FA, brute force protection, and
+              account locking.
+            </p>
+            <ul class="feature-list">
+              <li>✓ Two-Factor Auth (TOTP)</li>
+              <li>✓ Brute Force Protection</li>
+              <li>✓ Password Recovery</li>
+              <li>✓ Email Verification</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Admin Dashboard</h3>
+            <p>
+              Beautiful React-based admin panel for managing users, tenants,
+              apps, and roles.
+            </p>
+            <ul class="feature-list">
+              <li>✓ User Management</li>
+              <li>✓ Tenant Management</li>
+              <li>✓ Application Registry</li>
+              <li>✓ Role & Permission Editor</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Start Section -->
+    <section id="quickstart" class="quickstart">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Get Started in Minutes</h2>
+          <p class="section-subtitle">
+            Follow these simple steps to run DoorAuth locally
+          </p>
+        </div>
+        <div class="steps-container">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Clone the Repository</h3>
+              <p>Get the source code from GitHub</p>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path
+                      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                    />
+                  </svg>
+                </button>
+                <pre><code>git clone https://github.com/yourusername/DoorAuthServer.git
+cd DoorAuthServer</code></pre>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Install Dependencies</h3>
+              <p>Install server and client packages</p>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path
+                      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                    />
+                  </svg>
+                </button>
+                <pre><code># Install server dependencies
+cd server
+npm install
+
+# Install client dependencies
+cd ../client
+npm install</code></pre>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Setup Database</h3>
+              <p>Initialize PostgreSQL database with Prisma</p>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path
+                      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                    />
+                  </svg>
+                </button>
+                <pre><code>cd server
+npx prisma migrate dev
+npx prisma db seed</code></pre>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h3>Start the Server</h3>
+              <p>Run the development server</p>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path
+                      d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                    />
+                  </svg>
+                </button>
+                <pre><code># Start backend
+npm run dev
+
+# In another terminal, start frontend
+cd ../client
+npm run dev</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="access-points">
+          <h3>Access Points</h3>
+          <div class="endpoints-grid">
+            <div class="endpoint">
+              <span class="endpoint-label">API Server</span>
+              <code>https://localhost:3000</code>
+            </div>
+            <div class="endpoint">
+              <span class="endpoint-label">Swagger UI</span>
+              <code>https://localhost:3000/api-docs</code>
+            </div>
+            <div class="endpoint">
+              <span class="endpoint-label">Admin Dashboard</span>
+              <code>https://localhost:3000</code>
+            </div>
+            <div class="endpoint">
+              <span class="endpoint-label">Prisma Studio</span>
+              <code>npx prisma studio</code>
+            </div>
+          </div>
+          <div class="default-credentials">
+            <h4>Default Credentials</h4>
+            <div class="credentials">
+              <div class="credential-item">
+                <span class="label">Email:</span>
+                <code>bd@gmail.com</code>
+              </div>
+              <div class="credential-item">
+                <span class="label">Password:</span>
+                <code>1q2w3E*</code>
+              </div>
+              <div class="credential-item">
+                <span class="label">Tenant:</span>
+                <code>Default (ID: 1)</code>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Integration Section -->
+    <section id="integration" class="integration">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Interactive Integration Guide</h2>
+          <p class="section-subtitle">
+            Step-by-step integration for your application framework
+          </p>
+        </div>
+
+        <!-- Framework Selector -->
+        <div class="framework-selector">
+          <button class="framework-btn active" data-framework="blazor">
+            <span class="framework-icon">⚡</span>
+            <span>Blazor Server</span>
+          </button>
+          <button class="framework-btn" data-framework="aspnet">
+            <span class="framework-icon">🌐</span>
+            <span>ASP.NET Core</span>
+          </button>
+          <button class="framework-btn" data-framework="react">
+            <span class="framework-icon">⚛️</span>
+            <span>React SPA</span>
+          </button>
+          <button class="framework-btn" data-framework="nodejs">
+            <span class="framework-icon">🟢</span>
+            <span>Node.js</span>
+          </button>
+        </div>
+
+        <!-- Integration Content -->
+        <div class="integration-content">
+          <!-- Blazor Integration -->
+          <div id="blazor-integration" class="framework-content active">
+            <div class="integration-steps">
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 1</span>
+                  <h3>Install NuGet Packages</h3>
+                </div>
+                <p>
+                  Add OpenID Connect authentication packages to your Blazor
+                  project
+                </p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                      />
+                    </svg>
+                  </button>
+                  <pre><code>dotnet add package Microsoft.AspNetCore.Authentication.OpenIdConnect --version 9.0.0
+dotnet add package Microsoft.AspNetCore.Authentication.Cookies --version 2.2.0</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 2</span>
+                  <h3>Register Application in DoorAuth</h3>
+                </div>
+                <p>Add your application to the DoorAuth database</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                      />
+                    </svg>
+                  </button>
+                  <pre><code>// In server/prisma/seed.ts, add:
+{
+    clientId: 'your-app-client-id',
+    clientSecret: 'your-app-secret-key',
+    name: 'Your Application Name',
+    appUrl: 'https://localhost:7231',
+    redirectUris: 'https://localhost:7231/signin-oidc',
+    grantTypes: 'authorization_code,refresh_token',
+    scopes: 'openid,profile,email',
+    tenantId: 1,
+    isActive: true
+}</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 3</span>
+                  <h3>Configure Program.cs</h3>
+                </div>
+                <p>Add OIDC authentication to your application</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                      />
+                    </svg>
+                  </button>
+                  <pre><code>builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddOpenIdConnect(options =>
+{
+    options.Authority = "https://localhost:3000";
+    options.ClientId = "your-app-client-id";
+    options.ClientSecret = "your-app-secret-key";
+    options.ResponseType = OpenIdConnectResponseType.Code;
+    options.SaveTokens = true;
+    options.UsePkce = true;
+});</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 4</span>
+                  <h3>Add Authentication Middleware</h3>
+                </div>
+                <p>Enable authentication in your application pipeline</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                      />
+                    </svg>
+                  </button>
+                  <pre><code>app.UseAuthentication();
+app.UseAuthorization();
+
+// Login endpoint
+app.MapGet("/login", () => Results.Challenge(
+    new AuthenticationProperties { RedirectUri = "/" },
+    new[] { OpenIdConnectDefaults.AuthenticationScheme }
+));
+
+// Logout endpoint
+app.MapGet("/logout", async (HttpContext context) =>
+{
+    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+});</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 5</span>
+                  <h3>Protect Your Pages</h3>
+                </div>
+                <p>Add authorization to your Razor components</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                      />
+                    </svg>
+                  </button>
+                  <pre><code>@page "/dashboard"
+@attribute [Authorize]
+
+&lt;h1&gt;Welcome, @context.User.Identity?.Name&lt;/h1&gt;
+
+&lt;AuthorizeView&gt;
+    &lt;Authorized&gt;
+        &lt;p&gt;You are logged in!&lt;/p&gt;
+    &lt;/Authorized&gt;
+    &lt;NotAuthorized&gt;
+        &lt;a href="/login"&gt;Please login&lt;/a&gt;
+    &lt;/NotAuthorized&gt;
+&lt;/AuthorizeView&gt;</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 6</span>
+                  <h3>Test Your Integration</h3>
+                </div>
+                <div class="test-checklist">
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Start DoorAuth server (npm run dev)</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Start your Blazor app (dotnet run)</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Navigate to your app URL</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Click login - should redirect to DoorAuth</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Enter credentials (bd@gmail.com / 1q2w3E*)</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Verify redirect back to your app</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Check user is authenticated</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Test logout functionality</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ASP.NET Core Integration -->
+          <div id="aspnet-integration" class="framework-content">
+            <div class="integration-steps">
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 1</span>
+                  <h3>Install NuGet Package</h3>
+                </div>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                      />
+                    </svg>
+                  </button>
+                  <pre><code>dotnet add package Microsoft.AspNetCore.Authentication.OpenIdConnect</code></pre>
+                </div>
+              </div>
+              <div class="info-box">
+                <h4>📚 Full ASP.NET Core Guide</h4>
+                <p>
+                  For complete ASP.NET Core integration instructions, see the
+                  <a
+                    href="https://github.com/yourusername/DoorAuthServer/tree/main/DoorAuthSample"
+                    target="_blank"
+                    >DoorAuthSample</a
+                  >
+                  project.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- React Integration -->
+          <div id="react-integration" class="framework-content">
+            <div class="integration-steps">
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 1</span>
+                  <h3>Install Dependencies</h3>
+                </div>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                      />
+                    </svg>
+                  </button>
+                  <pre><code>npm install axios react-router-dom</code></pre>
+                </div>
+              </div>
+              <div class="info-box">
+                <h4>📚 Full React SPA Guide</h4>
+                <p>
+                  For complete React integration with OAuth 2.0 PKCE flow, see
+                  the
+                  <a
+                    href="https://github.com/yourusername/DoorAuthServer/tree/main/client_todo"
+                    target="_blank"
+                    >client_todo</a
+                  >
+                  example project.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Node.js Integration -->
+          <div id="nodejs-integration" class="framework-content">
+            <div class="integration-steps">
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 1</span>
+                  <h3>Install Passport.js</h3>
+                </div>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                      />
+                    </svg>
+                  </button>
+                  <pre><code>npm install passport passport-openidconnect express-session</code></pre>
+                </div>
+              </div>
+              <div class="info-box">
+                <h4>📚 API Documentation</h4>
+                <p>
+                  For direct API integration, visit the
+                  <a href="https://localhost:3000/api-docs" target="_blank"
+                    >Swagger documentation</a
+                  >
+                  when the server is running.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- API Section -->
+    <section id="api" class="api-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Comprehensive API</h2>
+          <p class="section-subtitle">
+            40+ RESTful endpoints with full Swagger documentation
+          </p>
+        </div>
+        <div class="api-categories">
+          <div class="api-category">
+            <h3>🔐 Authentication (3)</h3>
+            <div class="api-endpoints">
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/auth/register</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/auth/login</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/auth/logout</code>
+              </div>
+            </div>
+          </div>
+          <div class="api-category">
+            <h3>🔑 OAuth/OIDC (5)</h3>
+            <div class="api-endpoints">
+              <div class="api-endpoint">
+                <span class="method get">GET</span>
+                <code>/api/oauth/authorize</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/oauth/token</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method get">GET</span>
+                <code>/api/oauth/userinfo</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/oauth/revoke</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method get">GET</span>
+                <code>/api/oauth/end_session</code>
+              </div>
+            </div>
+          </div>
+          <div class="api-category">
+            <h3>🏢 Tenant Management (5)</h3>
+            <div class="api-endpoints">
+              <div class="api-endpoint">
+                <span class="method get">GET</span>
+                <code>/api/tenants</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method get">GET</span>
+                <code>/api/tenants/:id</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/tenants</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method put">PUT</span>
+                <code>/api/tenants/:id</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method delete">DELETE</span>
+                <code>/api/tenants/:id</code>
+              </div>
+            </div>
+          </div>
+          <div class="api-category">
+            <h3>📱 Application Management (6)</h3>
+            <div class="api-endpoints">
+              <div class="api-endpoint">
+                <span class="method get">GET</span>
+                <code>/api/applications</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/applications</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method put">PUT</span>
+                <code>/api/applications/:id</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method delete">DELETE</span>
+                <code>/api/applications/:id</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/applications/:id/regenerate-secret</code>
+              </div>
+            </div>
+          </div>
+          <div class="api-category">
+            <h3>🎯 Role & Permissions (7)</h3>
+            <div class="api-endpoints">
+              <div class="api-endpoint">
+                <span class="method get">GET</span>
+                <code>/api/roles</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/roles</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method put">PUT</span>
+                <code>/api/roles/:id</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method delete">DELETE</span>
+                <code>/api/roles/:id</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/roles/:id/permissions</code>
+              </div>
+            </div>
+          </div>
+          <div class="api-category">
+            <h3>🔒 Security Features</h3>
+            <div class="api-endpoints">
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/2fa/generate</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/2fa/verify</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/password/forgot-password</code>
+              </div>
+              <div class="api-endpoint">
+                <span class="method post">POST</span>
+                <code>/api/password/reset-password</code>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="swagger-cta">
+          <h3>Interactive API Documentation</h3>
+          <p>Explore and test all endpoints with Swagger UI</p>
+          <a
+            href="https://localhost:3000/api-docs"
+            class="btn btn-primary"
+            target="_blank"
+          >
+            Open Swagger UI
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+              />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Documentation Section -->
+    <section id="docs" class="docs-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Complete Documentation</h2>
+          <p class="section-subtitle">
+            Everything you need to integrate and deploy DoorAuth
+          </p>
+        </div>
+        <div class="docs-grid">
+          <a
+            href="https://github.com/yourusername/DoorAuthServer/blob/main/docs/QUICK_START.md"
+            class="doc-card"
+            target="_blank"
+          >
+            <div class="doc-icon">🚀</div>
+            <h3>Quick Start Guide</h3>
+            <p>Get up and running in minutes with step-by-step instructions</p>
+            <span class="doc-link">Read Guide →</span>
+          </a>
+          <a
+            href="https://github.com/yourusername/DoorAuthServer/blob/main/DOORAUTH_INTEGRATION_GUIDE.md"
+            class="doc-card"
+            target="_blank"
+          >
+            <div class="doc-icon">📘</div>
+            <h3>Integration Guide</h3>
+            <p>
+              Complete guide for integrating DoorAuth into your applications
+            </p>
+            <span class="doc-link">Read Guide →</span>
+          </a>
+          <a
+            href="https://github.com/yourusername/DoorAuthServer/blob/main/docs/OIDC_INTEGRATION_GUIDE.md"
+            class="doc-card"
+            target="_blank"
+          >
+            <div class="doc-icon">🔐</div>
+            <h3>OIDC Integration</h3>
+            <p>
+              OpenID Connect integration for .NET and JavaScript applications
+            </p>
+            <span class="doc-link">Read Guide →</span>
+          </a>
+          <a
+            href="https://github.com/yourusername/DoorAuthServer/blob/main/docs/2FA_GUIDE.md"
+            class="doc-card"
+            target="_blank"
+          >
+            <div class="doc-icon">🛡️</div>
+            <h3>2FA Setup</h3>
+            <p>Two-Factor Authentication implementation and testing guide</p>
+            <span class="doc-link">Read Guide →</span>
+          </a>
+          <a
+            href="https://github.com/yourusername/DoorAuthServer/blob/main/docs/TESTING_GUIDE.md"
+            class="doc-card"
+            target="_blank"
+          >
+            <div class="doc-icon">🧪</div>
+            <h3>Testing Guide</h3>
+            <p>Unit, integration, and E2E testing documentation</p>
+            <span class="doc-link">Read Guide →</span>
+          </a>
+          <a
+            href="https://github.com/yourusername/DoorAuthServer/blob/main/docs/TROUBLESHOOTING.md"
+            class="doc-card"
+            target="_blank"
+          >
+            <div class="doc-icon">🔧</div>
+            <h3>Troubleshooting</h3>
+            <p>Common issues and solutions for DoorAuth integration</p>
+            <span class="doc-link">Read Guide →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>🚪 DoorAuth</h3>
+            <p>
+              Production-ready authentication system built with ❤️ for
+              developers
+            </p>
+            <div class="social-links">
+              <a
+                href="https://github.com/yourusername/DoorAuthServer"
+                target="_blank"
+                >GitHub</a
+              >
+              <a
+                href="https://github.com/yourusername/DoorAuthServer/issues"
+                target="_blank"
+                >Issues</a
+              >
+              <a
+                href="https://github.com/yourusername/DoorAuthServer/discussions"
+                target="_blank"
+                >Discussions</a
+              >
+            </div>
+          </div>
+          <div class="footer-section">
+            <h4>Documentation</h4>
+            <ul>
+              <li><a href="#quickstart">Quick Start</a></li>
+              <li><a href="#integration">Integration Guide</a></li>
+              <li><a href="#api">API Reference</a></li>
+              <li>
+                <a href="https://localhost:3000/api-docs" target="_blank"
+                  >Swagger UI</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>Resources</h4>
+            <ul>
+              <li>
+                <a
+                  href="https://github.com/yourusername/DoorAuthServer/tree/main/DoorAuthSample"
+                  target="_blank"
+                  >ASP.NET Example</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/yourusername/DoorAuthServer/tree/main/client_todo"
+                  target="_blank"
+                  >React Example</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/yourusername/DoorAuthServer/blob/main/docs/TESTING_GUIDE.md"
+                  target="_blank"
+                  >Testing Guide</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/yourusername/DoorAuthServer/blob/main/docs/TROUBLESHOOTING.md"
+                  target="_blank"
+                  >Troubleshooting</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>Community</h4>
+            <ul>
+              <li>
+                <a
+                  href="https://github.com/yourusername/DoorAuthServer/blob/main/LICENSE"
+                  target="_blank"
+                  >MIT License</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/yourusername/DoorAuthServer/blob/main/CONTRIBUTING.md"
+                  target="_blank"
+                  >Contributing</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/yourusername/DoorAuthServer/releases"
+                  target="_blank"
+                  >Releases</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/yourusername/DoorAuthServer"
+                  target="_blank"
+                  >Star on GitHub</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2026 DoorAuth. Released under the MIT License.</p>
+          <p>Built with Node.js, Express, Prisma, TypeScript, and React</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
