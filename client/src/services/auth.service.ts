@@ -5,8 +5,34 @@ export const authService = {
     async login(credentials: LoginCredentials): Promise<AuthResponse> {
         const response = await apiService.post<AuthResponse>('/auth/login', credentials);
         if (response.success && response.data) {
+            console.log('[Auth Service] Login successful, storing tokens:', {
+                hasToken: !!response.data.token,
+                hasRefreshToken: !!response.data.refreshToken,
+                hasSessionToken: !!response.data.sessionToken,
+            });
+
+            // Store access token
             localStorage.setItem('token', response.data.token);
+
+            // Store session token if provided
+            if (response.data.sessionToken) {
+                localStorage.setItem('sessionToken', response.data.sessionToken);
+            }
+
+            // Store refresh token if provided (for future use)
+            if (response.data.refreshToken) {
+                localStorage.setItem('refreshToken', response.data.refreshToken);
+            }
+
+            // Store token expiry time (1 hour from now)
+            const expiryTime = Date.now() + (60 * 60 * 1000); // 1 hour
+            localStorage.setItem('tokenExpiry', expiryTime.toString());
+
+            // Store user data
             localStorage.setItem('user', JSON.stringify(response.data.user));
+
+            console.log('[Auth Service] Tokens stored in localStorage');
+
             return response.data;
         }
         throw new Error(response.message || 'Login failed');
@@ -22,7 +48,7 @@ export const authService = {
 
     async logout(): Promise<void> {
         try {
-            // Step 1: Call server logout endpoint to clear server-side cookies
+            // Step 1: Call server logout endpoint to clear server-side cookies and revoke sessions
             await apiService.post('/auth/logout', {});
             console.log('[Logout] Server logout successful');
         } catch (error) {
@@ -30,8 +56,11 @@ export const authService = {
             // Continue with client-side cleanup even if server call fails
         }
 
-        // Step 2: Clear localStorage tokens
+        // Step 2: Clear all localStorage tokens
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('sessionToken');
+        localStorage.removeItem('tokenExpiry');
         localStorage.removeItem('user');
         console.log('[Logout] localStorage cleared');
 
@@ -62,5 +91,19 @@ export const authService = {
 
     isAuthenticated(): boolean {
         return !!this.getToken();
+    },
+
+    /**
+     * Check if token is expired or about to expire
+     */
+    isTokenExpired(): boolean {
+        const expiryTime = localStorage.getItem('tokenExpiry');
+        if (!expiryTime) return true;
+
+        const expiry = parseInt(expiryTime, 10);
+        const now = Date.now();
+        const fiveMinutes = 5 * 60 * 1000;
+
+        return now >= (expiry - fiveMinutes);
     },
 };

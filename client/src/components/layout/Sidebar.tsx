@@ -10,7 +10,8 @@ import {
     ChevronLeft,
     ChevronRight,
     ShieldCheck,
-    Network
+    Network,
+    Activity
 } from 'lucide-react';
 import { cn } from '../../utils/helpers';
 import { useAuth } from '../../contexts/AuthContext';
@@ -29,6 +30,7 @@ const navItems = [
     { label: 'Users', path: '/users', icon: Users },
     { label: 'User Roles', path: '/user-roles', icon: ShieldCheck },
     { label: 'Organizations', path: '/organizations', icon: Network },
+    { label: 'Sessions', path: '/sessions', icon: Activity },
     { label: 'Settings', path: '/settings', icon: Settings },
 ];
 

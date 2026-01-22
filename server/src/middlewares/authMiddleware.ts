@@ -2,8 +2,10 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { ApiResponse } from '../utils/ApiResponse';
 import { TokenBlacklistService } from '../services/tokenBlacklist.service';
+import { SessionService } from '../services/session.service';
 
 const tokenBlacklistService = new TokenBlacklistService();
+const sessionService = new SessionService();
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.split(' ')[1] || req.cookies?.access_token;
@@ -22,6 +24,17 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
       if (isBlacklisted) {
         res.status(401).json(ApiResponse.error('Unauthorized: Token has been revoked'));
         return;
+      }
+    }
+
+    // Validate session if sessionToken is provided in headers (optional check)
+    const sessionToken = req.headers['x-session-token'] as string;
+    if (sessionToken) {
+      const isSessionValid = await sessionService.validateSession(sessionToken);
+      if (!isSessionValid) {
+        // Session expired but token is still valid - log warning but allow request
+        // The session token is for tracking purposes, not primary authentication
+        console.warn('Session expired for user:', decoded.userId, 'but access token is valid');
       }
     }
 

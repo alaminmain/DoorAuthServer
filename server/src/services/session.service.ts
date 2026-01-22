@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 import { Logger } from '../utils/Logger';
-import UAParser from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
 
 const prisma = new PrismaClient();
 
@@ -35,8 +35,8 @@ export class SessionService {
             const sessionToken = crypto.randomBytes(32).toString('hex');
 
             // Parse user agent to extract device info
-            const parser = new UAParser(options.userAgent);
-            const result = parser.getResult();
+            const parser = new UAParser();
+            const result = parser.setUA(options.userAgent || '').getResult();
 
             const deviceInfo = result.device.model || result.device.type || 'Unknown Device';
             const browser = result.browser.name ? `${result.browser.name} ${result.browser.version}` : null;

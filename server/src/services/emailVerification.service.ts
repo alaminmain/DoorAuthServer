@@ -269,7 +269,7 @@ export class EmailVerificationService {
     }
 
     /**
-     * Send verification email (placeholder - integrate with email service)
+     * Send verification email (using Brevo email service)
      */
     async sendVerificationEmail(userId: string, baseUrl: string): Promise<void> {
         try {
@@ -291,32 +291,20 @@ export class EmailVerificationService {
             // Generate verification URL
             const verificationUrl = this.generateVerificationUrl(token, baseUrl);
 
-            // TODO: Integrate with email service (SendGrid, AWS SES, etc.)
-            // For now, just log the URL
-            Logger.info('Verification email would be sent', {
+            // Send email using Brevo
+            const { EmailService } = await import('./email.service');
+            const emailService = new EmailService();
+
+            await emailService.sendVerificationEmail(
+                user.email,
+                verificationUrl,
+                user.userName || undefined
+            );
+
+            Logger.info('Verification email sent via Brevo', {
                 userId,
                 email: user.email,
-                verificationUrl,
             });
-
-            console.log('\n=================================');
-            console.log('EMAIL VERIFICATION');
-            console.log('=================================');
-            console.log(`To: ${user.email}`);
-            console.log(`Name: ${user.userName || 'User'}`);
-            console.log(`Verification URL: ${verificationUrl}`);
-            console.log('=================================\n');
-
-            // In production, replace with actual email sending:
-            // await emailService.send({
-            //   to: user.email,
-            //   subject: 'Verify Your Email',
-            //   template: 'email-verification',
-            //   data: {
-            //     userName: user.userName,
-            //     verificationUrl,
-            //   },
-            // });
         } catch (error: any) {
             Logger.error('Failed to send verification email', {
                 error: error.message,

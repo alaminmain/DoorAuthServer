@@ -65,12 +65,13 @@ export class AuthService {
     // 5. Generate Token
     const token = this.generateToken(newUser);
 
-    // 6. Create Session
+    // 6. Create Session (1 hour - matches access token lifetime)
     try {
       const sessionToken = await sessionService.createSession({
         userId: newUser.id,
         ipAddress,
         userAgent,
+        expiresInHours: 1, // 1 hour - same as access token
       });
       Logger.info('Session created for new user', { userId: newUser.id, sessionToken: sessionToken.substring(0, 10) + '...' });
     } catch (error: any) {
@@ -193,13 +194,14 @@ export class AuthService {
     // 7. Generate Token
     const token = this.generateToken(user);
 
-    // 8. Create Session
+    // 8. Create Session (1 hour - matches access token lifetime)
     let sessionToken: string | null = null;
     try {
       sessionToken = await sessionService.createSession({
         userId: user.id,
         ipAddress,
         userAgent,
+        expiresInHours: 1, // 1 hour - same as access token
       });
       Logger.info('Session created on login', {
         userId: user.id,
@@ -218,9 +220,13 @@ export class AuthService {
 
     Logger.info('Successful login', { userId: user.id, email });
 
+    // 9. Generate refresh token (long-lived)
+    const refreshToken = this.generateRefreshToken(user);
+
     return {
       user: userWithoutPassword,
       token,
+      refreshToken,
       sessionToken,
       emailVerified: user.emailVerified,
     };
@@ -240,6 +246,23 @@ export class AuthService {
       },
       JWT_SECRET,
       { expiresIn: '1h' }
+    );
+  }
+
+  private generateRefreshToken(user: User): string {
+    const crypto = require('crypto');
+    const jti = crypto.randomUUID(); // Generate unique JWT ID
+
+    return jwt.sign(
+      {
+        userId: user.id,
+        tenantId: user.tenantId,
+        email: user.email,
+        type: 'refresh',
+        jti, // JWT ID for token blacklisting
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' } // Refresh token valid for 7 days
     );
   }
 }
