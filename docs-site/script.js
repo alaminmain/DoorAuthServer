@@ -285,12 +285,64 @@ const animateCounters = () => {
     counters.forEach(counter => observer.observe(counter));
 };
 
-// Initialize counter animation
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', animateCounters);
-} else {
-    animateCounters();
-}
+/* ============================================
+   LANGUAGE SWITCHER LOGIC
+   ============================================ */
+const initLanguageSwitcher = () => {
+  const langBtns = document.querySelectorAll('.lang-btn');
+  const translatableElements = document.querySelectorAll('[data-en]');
+  
+  const setLanguage = (lang) => {
+    document.documentElement.setAttribute('lang', lang);
+    localStorage.setItem('doorauth_lang', lang);
+    
+    // Update buttons
+    langBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
+    
+    // Update text
+    translatableElements.forEach(el => {
+      const translation = el.getAttribute(`data-${lang}`);
+      if (translation) {
+        // Handle special cases like innerHTML for gradients if needed
+        if (el.querySelector('.gradient-text')) {
+          const gradientSpan = el.querySelector('.gradient-text').outerHTML;
+          const textWithoutGradient = translation.replace('DoorAuth', '');
+          el.innerHTML = `${textWithoutGradient} ${gradientSpan}`;
+        } else {
+          el.textContent = translation;
+        }
+      }
+    });
+  };
+  
+  langBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.getAttribute('data-lang');
+      setLanguage(lang);
+    });
+  });
+  
+  // Initialize from storage or default
+  const savedLang = localStorage.getItem('doorauth_lang') || 'en';
+  setLanguage(savedLang);
+};
+
+// Initialize everything on load
+document.addEventListener('DOMContentLoaded', () => {
+  // Assuming these functions are defined elsewhere in the full document
+  // initNavbar();
+  // initFrameworkSelector(); // This is handled by the frameworkButtons.forEach at the top
+  // initChecklist(); // This is handled by the checkboxes.forEach
+  // initCopyButtons(); // This is handled by the copyCode function being called on click
+  
+  // Call the explicit initialization functions
+  animateOnScroll(); // Renamed from initScrollAnimations
+  animateCounters(); // Renamed from initStatsCounter
+  
+  initLanguageSwitcher(); // Add this
+});
 
 // ============================================
 // KEYBOARD SHORTCUTS

@@ -1698,6 +1698,65 @@ section {
 }
 
 /* ============================================
+   LANGUAGE SWITCHER
+   ============================================ */
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--gray-100);
+  padding: 4px 12px;
+  border-radius: 50px;
+  border: 1px solid var(--gray-200);
+  transition: all var(--transition-base);
+}
+
+.lang-switcher:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.lang-btn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-500);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+}
+
+.lang-btn.active {
+  color: var(--primary);
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.lang-divider {
+  color: var(--gray-300);
+  font-size: 12px;
+  font-weight: 300;
+}
+
+/* Bangla Typography */
+[lang="bn"] {
+  font-family: 'Hind Siliguri', 'SolaimanLipi', sans-serif;
+}
+
+[lang="bn"] .hero-title {
+  font-size: 56px;
+  line-height: normal;
+}
+
+/* ============================================
    UTILITY ANIMATIONS
    ============================================ */
 @keyframes shimmer {

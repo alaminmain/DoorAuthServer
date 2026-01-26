@@ -22,16 +22,33 @@
       <div class="container">
         <div class="nav-brand">
           <span class="logo">🚪</span>
-          <span class="brand-name">DoorAuth</span>
+          <span>DoorAuth</span>
         </div>
-        <ul class="nav-menu">
+
+        <div class="nav-controls">
+          <div class="lang-switcher">
+            <button class="lang-btn active" data-lang="en">EN</button>
+            <span class="lang-divider">|</span>
+            <button class="lang-btn" data-lang="bn">বাংলা</button>
+          </div>
+          
+          <ul class="nav-menu">
           <li><a href="#home" class="nav-link active">Home</a></li>
-          <li><a href="#features" class="nav-link">Features</a></li>
-          <li><a href="#quickstart" class="nav-link">Quick Start</a></li>
-          <li><a href="#integration" class="nav-link">Integration</a></li>
-          <li><a href="#api" class="nav-link">API</a></li>
+          <li>
+            <a href="#features" class="nav-link" data-en="Features" data-bn="বৈশিষ্ট্য">Features</a>
+          </li>
+          <li>
+            <a href="#how-it-works" class="nav-link" data-en="How it Works" data-bn="কিভাবে কাজ করে">How it Works</a>
+          </li>
+          <li>
+            <a href="#integration" class="nav-link" data-en="Integration" data-bn="ইন্টিগ্রেশন">Integration</a>
+          </li>
+          <li>
+            <a href="#api" class="nav-link" data-en="API" data-bn="এপিআই">API</a>
+          </li>
           <li><a href="#docs" class="nav-link">Docs</a></li>
         </ul>
+        </div>
         <a
           href="https://github.com/alaminmain/DoorAuthServer"
           class="btn-github"
@@ -58,19 +75,18 @@
         <div class="hero-content">
           <div class="hero-badge">
             <span class="badge-icon">✨</span>
-            <span>Production Ready • 15 Tests Passing</span>
+            <span data-en="New: Multi-Tenant Architecture v2.0" data-bn="নতুন: মাল্টি-টেন্যান্ট আর্কিটেকচার v2.0">New: Multi-Tenant Architecture v2.0</span>
           </div>
           <h1 class="hero-title">
-            Central Authentication System
-            <span class="gradient-text">Built for Scale</span>
+            <span data-en="Secure Your Apps with" data-bn="আপনার অ্যাপ সুরক্ষিত করুন">Secure Your Apps with</span>
+            <span class="gradient-text">DoorAuth</span>
           </h1>
-          <p class="hero-subtitle">
-            A production-ready, self-hosted Identity Provider with
-            Multi-Tenancy, OAuth 2.0/OIDC SSO, RBAC, and Dynamic Menu
-            Management. Deploy in minutes, scale to millions.
+          <p class="hero-subtitle" data-en="Open-source SSO, OAuth 2.0, and OIDC server designed for modern security and seamless multi-tenant integration." data-bn="আধুনিক নিরাপত্তা এবং নিরবচ্ছিন্ন মাল্টি-টেন্যান্ট ইন্টিগ্রেশনের জন্য ডিজাইন করা ওপেন-সোর্স SSO, OAuth 2.0 এবং OIDC সার্ভার।">
+            Open-source SSO, OAuth 2.0, and OIDC server designed for modern
+            security and seamless multi-tenant integration.
           </p>
           <div class="hero-buttons">
-            <a href="#quickstart" class="btn btn-primary">
+            <a href="#quickstart" class="btn btn-primary" data-en="Get Started" data-bn="শুরু করুন">
               <span>Get Started</span>
               <svg
                 width="20"
