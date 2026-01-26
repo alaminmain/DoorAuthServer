@@ -311,7 +311,12 @@ const initLanguageSwitcher = () => {
           const textWithoutGradient = translation.replace('DoorAuth', '');
           el.innerHTML = `${textWithoutGradient} ${gradientSpan}`;
         } else {
-          el.textContent = translation;
+          // Check if the translation contains HTML tags (like <li>)
+          if (translation.includes('<') && translation.includes('>')) {
+            el.innerHTML = translation;
+          } else {
+            el.textContent = translation;
+          }
         }
       }
     });
