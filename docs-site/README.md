@@ -111,7 +111,7 @@ Replace all instances of `yourusername` in `index.html`:
 
 ```html
 <!-- Find and replace -->
-https://github.com/yourusername/DoorAuthServer
+https://github.com/alaminmain/DoorAuthServer
 <!-- With your actual GitHub username -->
 https://github.com/YOUR_USERNAME/DoorAuthServer
 ```
@@ -244,8 +244,8 @@ Improvements to the documentation site are welcome! Please:
 
 ## 📞 Support
 
-- **Documentation Issues**: [GitHub Issues](https://github.com/yourusername/DoorAuthServer/issues)
-- **DoorAuth Questions**: [GitHub Discussions](https://github.com/yourusername/DoorAuthServer/discussions)
+- **Documentation Issues**: [GitHub Issues](https://github.com/alaminmain/DoorAuthServer/issues)
+- **DoorAuth Questions**: [GitHub Discussions](https://github.com/alaminmain/DoorAuthServer/discussions)
 
 ---
 

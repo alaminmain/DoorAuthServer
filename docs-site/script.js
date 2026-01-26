@@ -374,7 +374,7 @@ window.addEventListener('afterprint', () => {
 // ============================================
 console.log('%c🚪 DoorAuth Documentation', 'font-size: 24px; font-weight: bold; color: #667eea;');
 console.log('%cInterested in contributing? Check out our GitHub repo!', 'font-size: 14px; color: #6b7280;');
-console.log('%chttps://github.com/yourusername/DoorAuthServer', 'font-size: 14px; color: #667eea; text-decoration: underline;');
+console.log('%chttps://github.com/alaminmain/DoorAuthServer', 'font-size: 14px; color: #667eea; text-decoration: underline;');
 
 // ============================================
 // SERVICE WORKER REGISTRATION (Future PWA)
