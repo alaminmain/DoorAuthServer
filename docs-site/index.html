@@ -33,12 +33,12 @@
           </div>
           
           <ul class="nav-menu">
-          <li><a href="#home" class="nav-link active">Home</a></li>
+          <li><a href="#home" class="nav-link active" data-en="Home" data-bn="হোম">Home</a></li>
           <li>
-            <a href="#features" class="nav-link" data-en="Features" data-bn="বৈশিষ্ট্য">Features</a>
+            <a href="#features" class="nav-link" data-en="Features" data-bn="বৈশিষ্ট্যসমূহ">Features</a>
           </li>
           <li>
-            <a href="#how-it-works" class="nav-link" data-en="How it Works" data-bn="কিভাবে কাজ করে">How it Works</a>
+            <a href="#how-it-works" class="nav-link" data-en="How it Works" data-bn="কার্যপদ্ধতি">How it Works</a>
           </li>
           <li>
             <a href="#integration" class="nav-link" data-en="Integration" data-bn="ইন্টিগ্রেশন">Integration</a>
@@ -46,7 +46,10 @@
           <li>
             <a href="#api" class="nav-link" data-en="API" data-bn="এপিআই">API</a>
           </li>
-          <li><a href="#docs" class="nav-link">Docs</a></li>
+          <li>
+            <a href="creator.html" class="nav-link" data-en="Creator" data-bn="নির্মাতা">Creator</a>
+          </li>
+          <li><a href="#docs" class="nav-link" data-en="Docs" data-bn="ডকুমেন্টেশন">Docs</a></li>
         </ul>
         </div>
         <a
@@ -78,10 +81,10 @@
             <span data-en="New: Multi-Tenant Architecture v2.0" data-bn="নতুন: মাল্টি-টেন্যান্ট আর্কিটেকচার v2.0">New: Multi-Tenant Architecture v2.0</span>
           </div>
           <h1 class="hero-title">
-            <span data-en="Secure Your Apps with" data-bn="আপনার অ্যাপ সুরক্ষিত করুন">Secure Your Apps with</span>
+            <span data-en="Secure Your Apps with" data-bn="অ্যাপ্লিকেশন সমূহের নিরাপত্তা নিশ্চিত করুন">Secure Your Apps with</span>
             <span class="gradient-text">DoorAuth</span>
           </h1>
-          <p class="hero-subtitle" data-en="Open-source SSO, OAuth 2.0, and OIDC server designed for modern security and seamless multi-tenant integration." data-bn="আধুনিক নিরাপত্তা এবং নিরবচ্ছিন্ন মাল্টি-টেন্যান্ট ইন্টিগ্রেশনের জন্য ডিজাইন করা ওপেন-সোর্স SSO, OAuth 2.0 এবং OIDC সার্ভার।">
+          <p class="hero-subtitle" data-en="Open-source SSO, OAuth 2.0, and OIDC server designed for modern security and seamless multi-tenant integration." data-bn="আধুনিক নিরাপত্তা এবং নিরবচ্ছিন্ন মাল্টি-টেন্যান্ট ইন্টিগ্রেশন নিশ্চিত করতে ডিজাইন করা একটি ওপেন-সোর্স SSO, OAuth 2.0 এবং OIDC সার্ভার।">
             Open-source SSO, OAuth 2.0, and OIDC server designed for modern
             security and seamless multi-tenant integration.
           </p>
@@ -145,8 +148,8 @@
     <section id="how-it-works" class="how-it-works">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title" data-en="How DoorAuth Works" data-bn="ডোরঅথ কিভাবে কাজ করে">How DoorAuth Works</h2>
-          <p class="section-subtitle" data-en="Understanding the authentication flow and architecture" data-bn="অথেনটিকেশন ফ্লো এবং আর্কিটেকচার সম্পর্কে জানুন">
+          <h2 class="section-title" data-en="How DoorAuth Works" data-bn="ডোরঅথ যেভাবে কাজ করে">How DoorAuth Works</h2>
+          <p class="section-subtitle" data-en="Understanding the authentication flow and architecture" data-bn="অথেনটিকেশন ফ্লো এবং আর্কিটেকচার সম্পর্কে বিস্তারিত জানুন">
             Understanding the authentication flow and architecture
           </p>
         </div>
@@ -557,8 +560,8 @@
           </div>
           <div class="feature-card">
             <div class="feature-icon">🏢</div>
-            <h3 data-en="Multi-Tenancy" data-bn="মাল্টি-টেন্যান্সি">Multi-Tenancy</h3>
-            <p data-en="Built-in support for multiple organizations with complete data isolation and tenant-level configurations." data-bn="সম্পূর্ণ ডেটা আইসোলেশন এবং টেন্যান্ট-লেভেল কনফিগারেশন সহ একাধিক অর্গানাইজেশনের জন্য বিল্ট-ইন সাপোর্ট।">
+            <h3 data-en="Multi-Tenancy" data-bn="মাল্টি-টেন্যান্সি (Multi-Tenancy)">Multi-Tenancy</h3>
+            <p data-en="Built-in support for multiple organizations with complete data isolation and tenant-level configurations." data-bn="একই সার্ভারে একাধিক অর্গানাইজেশনের জন্য ডেটা আইসোলেশন এবং কাস্টম কনফিগারেশন সুবিধা।">
               Complete tenant isolation with dedicated data spaces. Perfect for
               SaaS applications.
             </p>
@@ -571,8 +574,8 @@
           </div>
           <div class="feature-card">
             <div class="feature-icon">🎯</div>
-            <h3 data-en="RBAC System" data-bn="RBAC সিস্টেম">RBAC System</h3>
-            <p data-en="Granular role-based access control with support for hierarchical roles and individual permissions." data-bn="হায়ারার্কিকাল রোল এবং ইন্ডিভিজুয়াল পারমিশন সাপোর্ট সহ গ্র্যানুলার রোল-বেসড এক্সেস কন্ট্রোল।">
+            <h3 data-en="RBAC System" data-bn="পারমিশন এবং রোল ম্যানেজমেন্ট (RBAC)">RBAC System</h3>
+            <p data-en="Granular role-based access control with support for hierarchical roles and individual permissions." data-bn="হায়ারার্কিকাল রোল এবং ইন্ডিভিজুয়াল পারমিশন ভিত্তিক শক্তিশালী অ্যাক্সেস কন্ট্রোল সিস্টেম।">
               Role-based access control with granular permissions and dynamic
               menu generation.
             </p>
@@ -599,8 +602,8 @@
           </div>
           <div class="feature-card">
             <div class="feature-icon">🛡️</div>
-            <h3 data-en="Security First" data-bn="নিরাপত্তা প্রথম">Security First</h3>
-            <p data-en="Robust security features including 2FA, brute force protection, and account locking to safeguard user data." data-bn="ব্যবহারকারীর ডেটা সুরক্ষিত রাখতে 2FA, ব্রুট ফোর্স সুরক্ষা এবং অ্যাকাউন্ট লকিং সহ শক্তিশালী নিরাপত্তা বৈশিষ্ট্য।">
+            <h3 data-en="Security First" data-bn="নিরাপত্তাই আমাদের অগ্রাধিকার">Security First</h3>
+            <p data-en="Robust security features including 2FA, brute force protection, and account locking to safeguard user data." data-bn="2FA, ব্রুট ফোর্স প্রোটেকশন এবং অ্যাকাউন্ট লকিং সহ এন্টারপ্রাইজ-গ্রেড নিরাপত্তা ব্যবস্থা।">
               Enterprise-grade security with 2FA, brute force protection, and
               account locking.
             </p>
@@ -613,8 +616,8 @@
           </div>
           <div class="feature-card">
             <div class="feature-icon">📊</div>
-            <h3 data-en="Admin Dashboard" data-bn="অ্যাডমিন ড্যাশবোর্ড">Admin Dashboard</h3>
-            <p data-en="Intuitive React-based admin panel for comprehensive management of users, tenants, applications, and roles." data-bn="ব্যবহারকারী, টেন্যান্ট, অ্যাপ্লিকেশন এবং রোলগুলির ব্যাপক ব্যবস্থাপনার জন্য স্বজ্ঞাত রিঅ্যাক্ট-ভিত্তিক অ্যাডমিন প্যানেল।">
+            <h3 data-en="Admin Dashboard" data-bn="আধুনিক অ্যাডমিন প্যানেল">Admin Dashboard</h3>
+            <p data-en="Intuitive React-based admin panel for comprehensive management of users, tenants, applications, and roles." data-bn="ব্যবহারকারী, টেন্যান্ট এবং পারমিশন ম্যানেজ করার জন্য একটি সুন্দর অ্যাডমিন ড্যাশবোর্ড।">
               Beautiful React-based admin panel for managing users, tenants,
               apps, and roles.
             </p>
@@ -1190,8 +1193,8 @@ app.MapGet("/logout", async (HttpContext context) =>
     <section id="api" class="api-section">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title" data-en="Comprehensive API Reference" data-bn="বিস্তারিত এপিআই রেফারেন্স">Comprehensive API</h2>
-          <p class="section-subtitle" data-en="Everything you need to integrate and manage your server programmatically" data-bn="আপনার সার্ভারটি প্রোগ্রাম্যাটিকভাবে ইন্টিগ্রেট এবং ম্যানেজ করার জন্য যা কিছু প্রয়োজন">
+          <h2 class="section-title" data-en="Comprehensive API Reference" data-bn="পুর্ণাঙ্গ এপিআই রেফারেন্স (Complete API Reference)">Comprehensive API</h2>
+          <p class="section-subtitle" data-en="Everything you need to integrate and manage your server programmatically" data-bn="আপনার সার্ভারটি প্রোগ্রাম্যাটিকভাবে পরিচালনা এবং ইন্টিগ্রেট করার জন্য প্রয়োজনীয় সকল ডকুমেন্টেশন">
             40+ RESTful endpoints with full Swagger documentation
           </p>
         </div>
