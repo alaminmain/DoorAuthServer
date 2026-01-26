@@ -8,9 +8,10 @@ A **production-ready, interactive documentation website** for DoorAuth that can 
 
 ```
 docs-site/
-├── index.html              # Main documentation page (44KB)
+├── index.html              # Main documentation page (Bilingual EN/BN)
+├── creator.html            # Creator profile page (Bilingual EN/BN)
 ├── styles.css              # Modern, responsive styling (20KB)
-├── script.js               # Interactive features (15KB)
+├── script.js               # Interactive features & Translation engine
 ├── 404.html                # Custom error page (6KB)
 ├── robots.txt              # SEO optimization
 ├── sitemap.xml             # Search engine sitemap
@@ -18,7 +19,6 @@ docs-site/
 ├── DEPLOYMENT.md           # Complete deployment guide
 ├── start-server.bat        # Windows server launcher
 └── start-server.ps1        # PowerShell server launcher
-
 .github/workflows/
 └── deploy-docs.yml         # GitHub Actions deployment
 ```
