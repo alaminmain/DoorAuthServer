@@ -14,6 +14,13 @@ datasource db {
 // Core Tenant & User Models
 // -------------------
 
+// -------------------
+// Registration Status Enum
+// -------------------
+
+// Note: SQLite doesn't support native enums, so we use String with validation in code
+// Valid values: PENDING, EMAIL_VERIFIED, TENANT_ASSIGNED, COMPLETED, REJECTED, EXPIRED
+
 model Tenant {
   id             String   @id @default(uuid())
   name           String
@@ -21,13 +28,68 @@ model Tenant {
   brandingConfig String?
   createdAt      DateTime @default(now()) @map("created_at")
 
-  users         User[]
-  applications  Application[]
-  roles         Role[]
-  auditLogs     AuditLog[]
-  organizations Organization[]
+  users                 User[]
+  applications          Application[]
+  roles                 Role[]
+  auditLogs             AuditLog[]
+  organizations         Organization[]
+  registrationRequests  RegistrationRequest[]
 
   @@map("tenants")
+}
+
+// -------------------
+// Registration Request Model (Three-Tier Workflow)
+// -------------------
+
+model RegistrationRequest {
+  id                      String    @id @default(uuid())
+  email                   String    @unique
+  fullName                String
+  companyName             String?
+  contact                 String?
+  passwordHash            String
+  
+  // Status tracking (PENDING, EMAIL_VERIFIED, TENANT_ASSIGNED, COMPLETED, REJECTED, EXPIRED)
+  status                  String    @default("PENDING")
+  emailVerified           Boolean   @default(false)
+  emailVerifiedAt         DateTime? @map("email_verified_at")
+  
+  // Verification token
+  verificationToken       String?   @unique @map("verification_token")
+  verificationTokenExpiry DateTime? @map("verification_token_expiry")
+  
+  // Phase 2: Admin tenant assignment
+  assignedTenantId        String?   @map("assigned_tenant_id")
+  assignedOrgId           String?   @map("assigned_org_id")
+  assignedByAdminId       String?   @map("assigned_by_admin_id")
+  assignedAt              DateTime? @map("assigned_at")
+  
+  // Phase 3: Tenant admin approval
+  approvedByTenantAdminId String?   @map("approved_by_tenant_admin_id")
+  approvedAt              DateTime? @map("approved_at")
+  
+  // Rejection tracking
+  rejectedBy              String?   @map("rejected_by")
+  rejectedAt              DateTime? @map("rejected_at")
+  rejectionReason         String?   @map("rejection_reason")
+  
+  // Metadata
+  ipAddress               String?   @map("ip_address")
+  userAgent               String?   @map("user_agent")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  tenant                  Tenant?       @relation(fields: [assignedTenantId], references: [id], onDelete: SetNull)
+  organization            Organization? @relation(fields: [assignedOrgId], references: [id], onDelete: SetNull)
+  createdUser             User?         @relation("CreatedFromRegistration")
+  
+  @@index([status])
+  @@index([emailVerified])
+  @@index([assignedTenantId])
+  @@index([createdAt])
+  @@map("registration_requests")
 }
 
 model User {
@@ -40,7 +102,12 @@ model User {
   companyAddress     String?
   designation        String?
   contact            String?
-  isApproved         Boolean   @default(true)
+  
+  // Approval workflow (CHANGED: default is now false for new registrations)
+  isApproved         Boolean   @default(false)
+  approvedBy         String?   @map("approved_by")
+  approvedAt         DateTime? @map("approved_at")
+  
   isLocked           Boolean   @default(false)
   isTwoFactorEnabled Boolean   @default(false)
   twoFactorSecret    String?
@@ -52,10 +119,19 @@ model User {
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
 
+  // Tenant relationship
   tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenantId         String
+  
+  // Organization
   organization     Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   organizationId   String?
+  
+  // Registration request (links to the original registration request)
+  registrationRequest   RegistrationRequest? @relation("CreatedFromRegistration", fields: [registrationRequestId], references: [id], onDelete: SetNull)
+  registrationRequestId String?              @unique @map("registration_request_id")
+  
+  // Other relations
   roles              UserRole[]
   auditLogs          AuditLog[]
   passTokens         PassToken[]
@@ -65,6 +141,7 @@ model User {
 
   @@unique([tenantId, loginId])
   @@unique([tenantId, email])
+  @@index([isApproved])
   @@map("users")
 }
 
@@ -82,6 +159,7 @@ model Organization {
   parentId String?
   children Organization[] @relation("OrganizationHierarchy")
   users    User[]
+  registrationRequests RegistrationRequest[]
 
   @@map("organizations")
 }

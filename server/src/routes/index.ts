@@ -13,6 +13,7 @@ import permissionRoutes from './permission.routes';
 import dashboardRoutes from './dashboard.routes';
 import organizationRoutes from './organization.routes';
 import sessionRoutes from './session.routes';
+import registrationRoutes from './registration.routes';
 
 const router = Router();
 
@@ -30,5 +31,7 @@ router.use('/permissions', permissionRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/organizations', organizationRoutes);
 router.use('/sessions', sessionRoutes);
+router.use('/registration', registrationRoutes);
 
 export default router;
+

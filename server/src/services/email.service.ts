@@ -234,4 +234,117 @@ export class EmailService {
       return false;
     }
   }
+
+  /**
+   * Generic send email method
+   */
+  async sendEmail(options: {
+    to: string;
+    subject: string;
+    html: string;
+    text?: string;
+  }) {
+    const mailOptions = {
+      from: `${process.env.EMAIL_FROM_NAME || 'DoorAuth'} <${process.env.EMAIL_FROM || 'noreply@doorauth.com'}>`,
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+      text: options.text || options.html.replace(/<[^>]*>/g, ''), // Strip HTML for text version
+    };
+
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      Logger.info('Email sent', { to: options.to, subject: options.subject, messageId: info.messageId });
+      return info;
+    } catch (error: any) {
+      Logger.error('Failed to send email', { to: options.to, subject: options.subject, error: error.message });
+      throw new Error('Failed to send email');
+    }
+  }
+
+  /**
+   * Send registration approval notification email
+   */
+  async sendApprovalEmail(to: string, userName: string, tenantName: string) {
+    const loginUrl = `${process.env.APP_URL || 'https://localhost:3000'}/login`;
+
+    return this.sendEmail({
+      to,
+      subject: 'Your Account Has Been Approved - DoorAuth',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; padding: 12px 30px; background: #10b981; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 Account Approved!</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${userName},</p>
+              <p>Great news! Your account has been approved and you now have access to <strong>${tenantName}</strong>.</p>
+              <p style="text-align: center;">
+                <a href="${loginUrl}" class="button">Login Now</a>
+              </p>
+              <p>If you have any questions, please contact your administrator.</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} DoorAuthServer. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+  }
+
+  /**
+   * Send registration rejection notification email
+   */
+  async sendRejectionEmail(to: string, userName: string, reason?: string) {
+    return this.sendEmail({
+      to,
+      subject: 'Registration Request Update - DoorAuth',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #ef4444; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+            .reason-box { background: #fff; padding: 15px; border-left: 4px solid #ef4444; margin: 15px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Registration Update</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${userName},</p>
+              <p>We regret to inform you that your registration request has not been approved.</p>
+              ${reason ? `<div class="reason-box"><strong>Reason:</strong> ${reason}</div>` : ''}
+              <p>If you believe this was a mistake or would like more information, please contact our support team.</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} DoorAuthServer. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+  }
 }

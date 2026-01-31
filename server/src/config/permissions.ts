@@ -41,6 +41,26 @@ export const SYSTEM_PERMISSIONS: Permission[] = [
         scope: 'system'
     },
 
+    // Registration Workflow - System Admin Permissions
+    {
+        resource: 'registration',
+        action: 'view_requests',
+        description: 'View all registration requests across tenants',
+        scope: 'system'
+    },
+    {
+        resource: 'registration',
+        action: 'assign_tenant',
+        description: 'Assign users to tenants during registration',
+        scope: 'system'
+    },
+    {
+        resource: 'registration',
+        action: 'reject_request',
+        description: 'Reject registration requests',
+        scope: 'system'
+    },
+
     // ==========================================
     // TENANT-SCOPED PERMISSIONS (Tenant Admin)
     // ==========================================
@@ -68,6 +88,30 @@ export const SYSTEM_PERMISSIONS: Permission[] = [
         resource: 'users',
         action: 'lock',
         description: 'Lock or unlock user accounts',
+        scope: 'tenant'
+    },
+    {
+        resource: 'user',
+        action: 'view_pending',
+        description: 'View pending users awaiting approval in tenant',
+        scope: 'tenant'
+    },
+    {
+        resource: 'user',
+        action: 'approve',
+        description: 'Approve pending users in tenant',
+        scope: 'tenant'
+    },
+    {
+        resource: 'user',
+        action: 'assign_roles',
+        description: 'Assign roles to users in tenant',
+        scope: 'tenant'
+    },
+    {
+        resource: 'user',
+        action: 'reject',
+        description: 'Reject pending users in tenant',
         scope: 'tenant'
     },
 
