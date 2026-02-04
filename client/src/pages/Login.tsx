@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Lock, Mail, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/ui/Button';
@@ -99,6 +99,15 @@ export default function LoginForm() {
                                     error={errors.password?.message}
                                     {...register('password')}
                                 />
+                            </div>
+
+                            <div className="flex justify-end">
+                                <Link
+                                    to="/forgot-password"
+                                    className="text-sm text-primary hover:text-primary/80 transition-colors"
+                                >
+                                    Forgot password?
+                                </Link>
                             </div>
                         </div>
 

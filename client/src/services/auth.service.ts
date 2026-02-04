@@ -106,4 +106,156 @@ export const authService = {
 
         return now >= (expiry - fiveMinutes);
     },
+
+    /**
+     * Request a password reset email
+     */
+    async forgotPassword(email: string, tenantId: number = 1): Promise<{ message: string }> {
+        const response = await apiService.post<{ message: string }>('/password/forgot-password', {
+            email,
+            tenantId,
+        });
+        if (response.success) {
+            return response.data || { message: 'Reset email sent' };
+        }
+        throw new Error(response.message || 'Failed to send reset email');
+    },
+
+    /**
+     * Reset password with token
+     */
+    async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+        const response = await apiService.post<{ message: string }>('/password/reset-password', {
+            token,
+            newPassword,
+        });
+        if (response.success) {
+            return response.data || { message: 'Password reset successful' };
+        }
+        throw new Error(response.message || 'Password reset failed');
+    },
+
+    /**
+     * Validate password reset token
+     */
+    async validateResetToken(token: string): Promise<{ valid: boolean; email?: string }> {
+        const response = await apiService.get<{ valid: boolean; email?: string }>(`/password/validate-token?token=${token}`);
+        if (response.success && response.data) {
+            return response.data;
+        }
+        throw new Error(response.message || 'Invalid or expired token');
+    },
+
+    // ==================== Email Verification ====================
+
+    /**
+     * Verify email with token (POST method for form submission)
+     */
+    async verifyEmail(token: string): Promise<{ message: string; verified: boolean }> {
+        const response = await apiService.post<{ message: string; verified: boolean }>('/auth/verify-email', { token });
+        if (response.success) {
+            // Update local user data if verification successful
+            const user = this.getCurrentUser();
+            if (user) {
+                user.emailVerified = true;
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+            return response.data || { message: 'Email verified successfully', verified: true };
+        }
+        throw new Error(response.message || 'Email verification failed');
+    },
+
+    /**
+     * Verify email via link (GET method for direct link access)
+     */
+    async verifyEmailByLink(token: string): Promise<{ message: string; verified: boolean }> {
+        const response = await apiService.get<{ message: string; verified: boolean }>(`/auth/verify-email/${token}`);
+        if (response.success) {
+            // Update local user data if verification successful
+            const user = this.getCurrentUser();
+            if (user) {
+                user.emailVerified = true;
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+            return response.data || { message: 'Email verified successfully', verified: true };
+        }
+        throw new Error(response.message || 'Email verification failed');
+    },
+
+    /**
+     * Resend verification email
+     */
+    async resendVerificationEmail(): Promise<{ message: string }> {
+        const response = await apiService.post<{ message: string }>('/auth/resend-verification', {});
+        if (response.success) {
+            return response.data || { message: 'Verification email sent' };
+        }
+        throw new Error(response.message || 'Failed to send verification email');
+    },
+
+    /**
+     * Get email verification status
+     */
+    async getVerificationStatus(): Promise<{ verified: boolean; email: string }> {
+        const response = await apiService.get<{ verified: boolean; email: string }>('/auth/verification-status');
+        if (response.success && response.data) {
+            return response.data;
+        }
+        throw new Error(response.message || 'Failed to get verification status');
+    },
+
+    // ==================== Two-Factor Authentication (2FA) ====================
+
+    /**
+     * Generate TOTP secret and QR code for 2FA setup
+     */
+    async generate2FA(): Promise<{ secret: string; qrCode: string; otpauthUrl: string }> {
+        const response = await apiService.post<{ secret: string; qrCode: string; otpauthUrl: string }>('/2fa/generate', {});
+        if (response.success && response.data) {
+            return response.data;
+        }
+        throw new Error(response.message || 'Failed to generate 2FA secret');
+    },
+
+    /**
+     * Verify TOTP code and enable 2FA
+     */
+    async verify2FA(code: string): Promise<{ message: string; backupCodes?: string[] }> {
+        const response = await apiService.post<{ message: string; backupCodes?: string[] }>('/2fa/verify', { code });
+        if (response.success) {
+            // Update local user data
+            const user = this.getCurrentUser();
+            if (user) {
+                user.isTwoFactorEnabled = true;
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+            return response.data || { message: '2FA enabled successfully' };
+        }
+        throw new Error(response.message || '2FA verification failed');
+    },
+
+    /**
+     * Disable 2FA with password confirmation
+     */
+    async disable2FA(password: string): Promise<{ message: string }> {
+        const response = await apiService.post<{ message: string }>('/2fa/disable', { password });
+        if (response.success) {
+            // Update local user data
+            const user = this.getCurrentUser();
+            if (user) {
+                user.isTwoFactorEnabled = false;
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+            return response.data || { message: '2FA disabled successfully' };
+        }
+        throw new Error(response.message || 'Failed to disable 2FA');
+    },
+
+    /**
+     * Get 2FA status
+     */
+    async get2FAStatus(): Promise<{ enabled: boolean }> {
+        const user = this.getCurrentUser();
+        return { enabled: user?.isTwoFactorEnabled || false };
+    },
 };

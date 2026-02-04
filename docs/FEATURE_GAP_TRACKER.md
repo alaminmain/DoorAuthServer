@@ -9,9 +9,9 @@
 
 | Priority | Feature | Complexity | Status |
 |----------|---------|------------|--------|
-| P1 | Email Verification UI | Medium | Pending |
-| P1 | 2FA Setup UI | High | Pending |
-| P1 | Self-Service Password Reset | Medium | Pending |
+| P1 | Email Verification UI | Medium | **Completed** |
+| P1 | 2FA Setup UI | High | **Completed** |
+| P1 | Self-Service Password Reset | Medium | **Completed** |
 | P2 | Smart Menu Integration | Low | Pending |
 | P2 | Admin Session Management | Low | Pending |
 | P3 | Users Bulk Create | Medium | Pending |
@@ -19,7 +19,7 @@
 | P3 | My Applications Page | Low | Pending |
 
 **Total Gaps:** 8 features
-**Completed:** 0/8
+**Completed:** 3/8
 
 ---
 
@@ -34,17 +34,20 @@
 - `GET /api/auth/verification-status` - Check status
 
 **Tasks:**
-- [ ] Create `/verify-email` page for token input
-- [ ] Create `/verify-email/:token` route for link verification
-- [ ] Add verification status indicator on user profile
-- [ ] Add "Resend verification" button
-- [ ] Show banner for unverified users
-- [ ] Handle verification success/error states
+- [x] Create `/verify-email` page for token input
+- [x] Create `/verify-email?token=` route for link verification
+- [x] Add verification status indicator (badge component)
+- [x] Add "Resend verification" button component
+- [x] Show banner for unverified users in dashboard
+- [x] Handle verification success/error states
 
-**Estimated Components:**
-- `VerifyEmailPage.tsx`
-- `VerificationStatus.tsx` (badge component)
-- `ResendVerificationButton.tsx`
+**Implemented Components:**
+- `VerifyEmail.tsx` - Verification page with token input and URL token support
+- `VerificationStatus.tsx` - Badge component showing verified/unverified status
+- `ResendVerificationButton.tsx` - Reusable resend button with loading states
+- `EmailVerificationBanner.tsx` - Dashboard banner for unverified users
+- Added `emailVerified` field to User type
+- Added `authService` methods: `verifyEmail()`, `verifyEmailByLink()`, `resendVerificationEmail()`, `getVerificationStatus()`
 
 **Dependencies:** None
 
@@ -58,22 +61,23 @@
 - `POST /api/2fa/disable` - Disable 2FA
 
 **Tasks:**
-- [ ] Create 2FA settings section in user profile/security page
-- [ ] Display QR code from `/api/2fa/generate`
-- [ ] Add TOTP code input for verification
-- [ ] Show backup codes (if implemented)
-- [ ] Add disable 2FA flow with password confirmation
-- [ ] Show 2FA status indicator
+- [x] Create 2FA settings section in Security page
+- [x] Display QR code from `/api/2fa/generate`
+- [x] Add TOTP code input for verification (6-digit with auto-submit)
+- [x] Show backup codes display with copy functionality
+- [x] Add disable 2FA flow with password confirmation
+- [x] Show 2FA status indicator badge
 
-**Estimated Components:**
-- `TwoFactorSetup.tsx` - Main setup wizard
-- `QRCodeDisplay.tsx` - QR code renderer
-- `TOTPInput.tsx` - 6-digit code input
-- `TwoFactorStatus.tsx` - Enable/disable toggle
+**Implemented Components:**
+- `Security.tsx` - Security settings page with 2FA management
+- `TwoFactorSetup.tsx` - Multi-step setup wizard (init → scan → verify → backup → complete)
+- `TOTPInput.tsx` - 6-digit code input with auto-focus, paste support, auto-submit
+- `TwoFactorStatus.tsx` - Badge showing 2FA enabled/disabled status
+- `Disable2FA.tsx` - Disable 2FA form with password confirmation
+- Added `authService` methods: `generate2FA()`, `verify2FA()`, `disable2FA()`, `get2FAStatus()`
+- Added `/security` route and navigation
 
-**Dependencies:**
-- qrcode library (already used server-side)
-- May need `react-qrcode` or similar
+**Dependencies:** None (QR code is rendered from base64 data URL from server)
 
 ---
 
@@ -85,17 +89,18 @@
 - `GET /api/password/validate-token` - Validate reset token
 
 **Tasks:**
-- [ ] Create `/forgot-password` page
-- [ ] Create `/reset-password/:token` page
-- [ ] Add "Forgot password?" link on login page
-- [ ] Handle token validation
-- [ ] Show success/error messages
-- [ ] Redirect to login after reset
+- [x] Create `/forgot-password` page
+- [x] Create `/reset-password/:token` page
+- [x] Add "Forgot password?" link on login page
+- [x] Handle token validation
+- [x] Show success/error messages
+- [x] Redirect to login after reset
 
-**Estimated Components:**
-- `ForgotPasswordPage.tsx`
-- `ResetPasswordPage.tsx`
-- Update `LoginPage.tsx` with forgot password link
+**Implemented Components:**
+- `ForgotPassword.tsx` - Request password reset email
+- `ResetPassword.tsx` - Reset password with token (includes password strength indicator)
+- Updated `Login.tsx` with "Forgot password?" link
+- Added `authService` methods: `forgotPassword()`, `resetPassword()`, `validateResetToken()`
 
 **Dependencies:** None
 
@@ -237,6 +242,9 @@ Phase 3: Productivity Features
 | Date | Feature | Action | Notes |
 |------|---------|--------|-------|
 | 2026-02-02 | - | Tracker created | Initial gap analysis |
+| 2026-02-04 | Self-Service Password Reset | Completed | ForgotPassword.tsx, ResetPassword.tsx, Login.tsx updated |
+| 2026-02-04 | Email Verification UI | Completed | VerifyEmail.tsx, VerificationStatus.tsx, ResendVerificationButton.tsx, EmailVerificationBanner.tsx |
+| 2026-02-04 | 2FA Setup UI | Completed | Security.tsx, TwoFactorSetup.tsx, TOTPInput.tsx, TwoFactorStatus.tsx, Disable2FA.tsx |
 
 ---
 

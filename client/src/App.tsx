@@ -7,6 +7,9 @@ import DashboardLayout from './components/layout/DashboardLayout';
 
 // Pages
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
 import Dashboard from './pages/Dashboard';
 import Tenants from './pages/Tenants';
 import Applications from './pages/Applications';
@@ -16,6 +19,7 @@ import Users from './pages/Users';
 import UserRoles from './pages/UserRoles';
 import Sessions from './pages/Sessions';
 import Organizations from './pages/Organizations';
+import Security from './pages/Security';
 
 function App() {
   return (
@@ -25,6 +29,9 @@ function App() {
           <Router>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
 
               <Route path="/" element={
                 <ProtectedRoute>
@@ -42,7 +49,8 @@ function App() {
                 <Route path="user-roles" element={<UserRoles />} />
                 <Route path="sessions" element={<Sessions />} />
                 <Route path="organizations" element={<Organizations />} />
-                <Route path="settings" element={<div className="p-4">Settings (Coming Soon)</div>} />
+                <Route path="settings" element={<Security />} />
+                <Route path="security" element={<Security />} />
 
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>

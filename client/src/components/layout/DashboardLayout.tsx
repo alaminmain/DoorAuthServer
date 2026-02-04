@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { cn } from '../../utils/helpers';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import EmailVerificationBanner from '../auth/EmailVerificationBanner';
 
 export default function DashboardLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -18,6 +19,7 @@ export default function DashboardLayout() {
                 )}
             >
                 <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+                <EmailVerificationBanner />
 
                 <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
                     <div className="mx-auto max-w-7xl animate-fade-in">

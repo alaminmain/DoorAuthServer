@@ -31,7 +31,7 @@ const navItems = [
     { label: 'User Roles', path: '/user-roles', icon: ShieldCheck },
     { label: 'Organizations', path: '/organizations', icon: Network },
     { label: 'Sessions', path: '/sessions', icon: Activity },
-    { label: 'Settings', path: '/settings', icon: Settings },
+    { label: 'Security', path: '/security', icon: Settings },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {

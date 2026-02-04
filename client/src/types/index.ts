@@ -12,6 +12,7 @@ export interface User {
     loginId: string;
     userName: string;
     email: string;
+    emailVerified: boolean;
     companyName?: string;
     companyAddress?: string;
     designation?: string;
