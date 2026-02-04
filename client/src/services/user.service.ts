@@ -65,4 +65,19 @@ export const userService = {
         const response = await apiService.get<any[]>(`/users/${id}/activity-logs`);
         return response.data || [];
     },
+
+    async verifyUser(id: string): Promise<User> {
+        const response = await apiService.put<User>(`/users/${id}/verify`, { emailVerified: true });
+        if (response.success && response.data) {
+            return response.data;
+        }
+        throw new Error(response.message || 'Failed to verify user');
+    },
+
+    async sendPasswordRecoveryEmail(userId: string): Promise<void> {
+        const response = await apiService.post(`/users/${userId}/send-password-recovery`);
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to send password recovery email');
+        }
+    },
 };

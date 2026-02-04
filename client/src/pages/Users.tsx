@@ -9,7 +9,8 @@ import UserList from '../components/users/UserList';
 import UserForm from '../components/users/UserForm';
 import UserDetailsModal from '../components/users/UserDetailsModal';
 import { useToast } from '../contexts/ToastContext';
-import { confirmDelete } from '../utils/sweetalert';
+import { useAuth } from '../contexts/AuthContext';
+import { confirmDelete, confirmAction } from '../utils/sweetalert';
 
 export default function Users() {
     const [users, setUsers] = useState<User[]>([]);
@@ -22,6 +23,12 @@ export default function Users() {
     const [error, setError] = useState<string | null>(null);
 
     const toast = useToast();
+    const { user: currentUser } = useAuth();
+
+    // Check if current user is Super Admin (has 'Super Admin' role or system admin)
+    const isSuperAdmin = currentUser?.roles?.some(
+        (r) => r.role.name === 'Super Admin' || r.role.name === 'Tenant Admin' || r.role.isSystem
+    ) ?? false;
 
     const fetchUsers = async () => {
         try {
@@ -67,6 +74,47 @@ export default function Users() {
         } catch (err: any) {
             setError(err.message || 'Failed to delete user');
             toast.error(err.message || 'Failed to delete user');
+        }
+    };
+
+    const handleVerifyUser = async (userId: string) => {
+        const user = users.find(u => u.id === userId);
+        if (!user) return;
+
+        const confirmed = await confirmAction(
+            'Verify User',
+            `Are you sure you want to verify ${user.userName}'s email? This will mark their account as email verified.`,
+            'Verify',
+            'success'
+        );
+        if (!confirmed) return;
+
+        try {
+            const updatedUser = await userService.verifyUser(userId);
+            setUsers(prev => prev.map(u => u.id === userId ? updatedUser : u));
+            toast.success(`${user.userName}'s email has been verified`);
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to verify user');
+        }
+    };
+
+    const handleSendPasswordRecovery = async (userId: string) => {
+        const user = users.find(u => u.id === userId);
+        if (!user) return;
+
+        const confirmed = await confirmAction(
+            'Send Password Recovery',
+            `Send a password recovery email to ${user.email}?`,
+            'Send Email',
+            'info'
+        );
+        if (!confirmed) return;
+
+        try {
+            await userService.sendPasswordRecoveryEmail(userId);
+            toast.success(`Password recovery email sent to ${user.email}`);
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to send password recovery email');
         }
     };
 
@@ -143,6 +191,9 @@ export default function Users() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onViewDetails={handleViewDetails}
+                onVerifyUser={handleVerifyUser}
+                onSendPasswordRecovery={handleSendPasswordRecovery}
+                isSuperAdmin={isSuperAdmin}
                 isLoading={isLoading}
             />
 
@@ -156,6 +207,14 @@ export default function Users() {
                     user={selectedUser}
                     onSubmit={handleSubmit}
                     onCancel={() => setIsDialogOpen(false)}
+                    onVerifyUser={async (userId) => {
+                        await handleVerifyUser(userId);
+                        // Update the selected user in the dialog to reflect verification
+                        if (selectedUser) {
+                            setSelectedUser({ ...selectedUser, emailVerified: true });
+                        }
+                    }}
+                    isSuperAdmin={isSuperAdmin}
                     isLoading={isSubmitting}
                 />
             </Dialog>

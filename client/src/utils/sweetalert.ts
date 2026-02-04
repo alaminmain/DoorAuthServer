@@ -120,3 +120,40 @@ export const warningAlert = async (
         confirmButtonColor: '#f0ad4e',
     });
 };
+
+/**
+ * Show a generic confirmation action dialog
+ * @param title - The title of the confirmation dialog
+ * @param text - The text/message to display
+ * @param confirmButtonText - Text for the confirm button
+ * @param iconType - Icon type: 'warning' | 'info' | 'success' | 'error' | 'question'
+ * @returns Promise<boolean> - true if confirmed, false if cancelled
+ */
+export const confirmAction = async (
+    title: string,
+    text: string,
+    confirmButtonText: string = 'Confirm',
+    iconType: 'warning' | 'info' | 'success' | 'error' | 'question' = 'question'
+): Promise<boolean> => {
+    const iconColors: Record<string, string> = {
+        warning: '#f0ad4e',
+        info: '#3085d6',
+        success: '#28a745',
+        error: '#d33',
+        question: '#3085d6',
+    };
+
+    const result = await Swal.fire({
+        title,
+        text,
+        icon: iconType,
+        showCancelButton: true,
+        confirmButtonColor: iconColors[iconType] || '#3085d6',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText,
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+    });
+
+    return result.isConfirmed;
+};

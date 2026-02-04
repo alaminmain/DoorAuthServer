@@ -21,24 +21,24 @@ async function main() {
 
     console.log(`Created Tenant: ${demoTenant.name} (${demoTenant.id})`);
 
-    // 2. Create System Admin Role for this Tenant
-    const adminRole = await prisma.role.upsert({
+    // 2. Create Super Admin Role for this Tenant
+    const superAdminRole = await prisma.role.upsert({
         where: {
             tenantId_name: {
                 tenantId: demoTenant.id,
-                name: 'Admin',
+                name: 'Super Admin',
             },
         },
         update: {},
         create: {
-            name: 'Admin',
-            description: 'System Administrator with full access',
+            name: 'Super Admin',
+            description: 'Super Administrator with full system access including user verification',
             isSystem: true,
             tenantId: demoTenant.id,
         },
     });
 
-    console.log(`Created Role: ${adminRole.name} (${adminRole.id})`);
+    console.log(`Created Role: ${superAdminRole.name} (${superAdminRole.id})`);
 
     // 3. Create a Default Application (e.g., The Admin Panel itself)
     const adminApp = await prisma.application.upsert({
@@ -91,17 +91,17 @@ async function main() {
         where: {
             userId_roleId: {
                 userId: adminUser.id,
-                roleId: adminRole.id,
+                roleId: superAdminRole.id,
             },
         },
         update: {},
         create: {
             userId: adminUser.id,
-            roleId: adminRole.id,
+            roleId: superAdminRole.id,
         },
     });
 
-    console.log('Assigned Admin Role to User');
+    console.log('Assigned Super Admin Role to User');
 
     // 5.1 Assign Vehicle User Role to Admin (For Dashboard Visibility)
     // IMPORTANT: Roles must be created before assignment. Moving this assignment to end of script if roles not yet created.

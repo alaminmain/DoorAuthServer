@@ -837,6 +837,168 @@ section {
 }
 
 /* ============================================
+   SSO PORTAL SECTION
+   ============================================ */
+.sso-portal-section {
+  margin-top: 80px;
+  padding-top: 40px;
+  border-top: 2px solid var(--gray-200);
+}
+
+.sso-flow-diagram {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 32px;
+  margin-bottom: 48px;
+}
+
+.sso-flow-card {
+  background: white;
+  border: 2px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 32px;
+  transition: all var(--transition-base);
+}
+
+.sso-flow-card:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-lg);
+}
+
+.sso-flow-card h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 16px;
+}
+
+.sso-flow-card h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.sso-flow-card p {
+  color: var(--gray-600);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.flow-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.flow-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--gray-50);
+  border-radius: 12px;
+  transition: all var(--transition-fast);
+}
+
+.flow-item:hover {
+  background: var(--gray-100);
+}
+
+.flow-item.highlight {
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border: 2px solid var(--primary-light);
+}
+
+.flow-item.success {
+  background: linear-gradient(135deg, #10b98115 0%, #38ef7d15 100%);
+  border: 2px solid var(--success);
+}
+
+.flow-icon {
+  font-size: 24px;
+  min-width: 40px;
+  text-align: center;
+}
+
+.flow-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.flow-text strong {
+  color: var(--gray-900);
+  font-size: 15px;
+}
+
+.flow-text span {
+  color: var(--gray-500);
+  font-size: 13px;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.flow-arrow-down {
+  text-align: center;
+  color: var(--gray-400);
+  font-size: 20px;
+  padding: 4px 0;
+}
+
+.sso-benefits {
+  background: white;
+  border-radius: 16px;
+  padding: 48px;
+  box-shadow: var(--shadow-md);
+}
+
+.sso-benefits h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gray-900);
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 32px;
+}
+
+.benefit-item {
+  text-align: center;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--gray-50);
+  transition: all var(--transition-base);
+}
+
+.benefit-item:hover {
+  background: var(--gray-100);
+  transform: translateY(-4px);
+}
+
+.benefit-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.benefit-item h4 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+}
+
+.benefit-item p {
+  color: var(--gray-600);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ============================================
    API SECTION
    ============================================ */
 .api-section {
@@ -1001,6 +1163,231 @@ section {
 }
 
 /* ============================================
+   CHANGELOG PAGE STYLES
+   ============================================ */
+.changelog-hero {
+  background: var(--gradient-primary);
+  padding: 120px 0 60px;
+  color: white;
+  text-align: center;
+}
+
+.changelog-hero-content h1 {
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.changelog-hero-content p {
+  font-size: 18px;
+  opacity: 0.9;
+  margin-bottom: 24px;
+}
+
+.current-version-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 15px;
+}
+
+.current-version-badge strong {
+  font-size: 18px;
+}
+
+.current-version-badge .separator {
+  opacity: 0.5;
+}
+
+.changelog-content-section {
+  background: var(--gray-50);
+  padding: 60px 0 100px;
+}
+
+.back-to-docs {
+  text-align: center;
+  margin-top: 48px;
+}
+
+.back-to-docs .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.changelog-timeline {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.changelog-timeline::before {
+  content: '';
+  position: absolute;
+  left: 120px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--gray-200);
+  border-radius: 3px;
+}
+
+.changelog-entry {
+  position: relative;
+  padding-left: 160px;
+  padding-bottom: 48px;
+}
+
+.changelog-entry:last-child {
+  padding-bottom: 0;
+}
+
+.changelog-entry.latest .changelog-content {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.changelog-marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  padding-right: 24px;
+}
+
+.version-badge {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.changelog-entry.latest .version-badge {
+  background: var(--gradient-success);
+}
+
+.changelog-date {
+  color: var(--gray-500);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.changelog-content {
+  background: white;
+  border: 2px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 32px;
+  transition: all var(--transition-base);
+}
+
+.changelog-content:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.changelog-content h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 24px;
+}
+
+.changelog-category {
+  margin-bottom: 20px;
+}
+
+.changelog-category:last-child {
+  margin-bottom: 0;
+}
+
+.changelog-category h4 {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.changelog-category.added h4 {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.changelog-category.improved h4 {
+  background: rgba(102, 126, 234, 0.1);
+  color: var(--primary);
+}
+
+.changelog-category.fixed h4 {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+}
+
+.changelog-category.removed h4 {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
+.changelog-category ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.changelog-category li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 8px;
+  color: var(--gray-700);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.changelog-category li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--gray-400);
+}
+
+.changelog-category.added li::before {
+  color: var(--success);
+}
+
+.changelog-category.improved li::before {
+  color: var(--primary);
+}
+
+/* Footer updated link styles */
+.footer-updated {
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.footer-updated a {
+  color: var(--primary-light);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-updated a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================
    FOOTER
    ============================================ */
 .footer {
@@ -1127,6 +1514,78 @@ section {
 
   .framework-btn {
     width: 100%;
+  }
+
+  .sso-flow-diagram {
+    grid-template-columns: 1fr;
+  }
+
+  .sso-flow-card {
+    padding: 24px;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sso-benefits {
+    padding: 32px 24px;
+  }
+
+  .flow-item {
+    padding: 12px;
+  }
+
+  .flow-text strong {
+    font-size: 14px;
+  }
+
+  .flow-text span {
+    font-size: 12px;
+  }
+
+  /* Changelog responsive */
+  .version-info-banner {
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px;
+  }
+
+  .version-number {
+    font-size: 28px;
+  }
+
+  .changelog-timeline::before {
+    left: 20px;
+  }
+
+  .changelog-entry {
+    padding-left: 50px;
+  }
+
+  .changelog-marker {
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+    left: auto;
+    padding-right: 0;
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+
+  .changelog-content {
+    padding: 24px;
+  }
+
+  .changelog-hero-content h1 {
+    font-size: 36px;
+  }
+
+  .current-version-badge {
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 24px;
   }
 }
 
@@ -1694,6 +2153,10 @@ section {
 
   .arch-layer.apps {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
   }
 }
 

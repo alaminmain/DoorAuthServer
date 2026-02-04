@@ -1067,37 +1067,307 @@ app.MapGet("/logout", async (HttpContext context) =>
               <div class="integration-step">
                 <div class="step-header">
                   <span class="step-badge">Step 1</span>
-                  <h3>Install NuGet Package</h3>
+                  <h3>Create ASP.NET Core Project</h3>
                 </div>
+                <p>Create a new ASP.NET Core Razor Pages or MVC application</p>
                 <div class="code-block">
                   <button class="copy-btn" onclick="copyCode(this)">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                      <path
-                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                      />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                     </svg>
                   </button>
-                  <pre><code>dotnet add package Microsoft.AspNetCore.Authentication.OpenIdConnect</code></pre>
+                  <pre><code># Create new Razor Pages project
+dotnet new webapp -n MyApp
+cd MyApp
+
+# Add OIDC authentication package
+dotnet add package Microsoft.AspNetCore.Authentication.OpenIdConnect</code></pre>
                 </div>
               </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 2</span>
+                  <h3>Register Application in DoorAuth</h3>
+                </div>
+                <p>Add your application to DoorAuth via Admin Dashboard or database seed</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>// In server/prisma/seed.ts, add:
+{
+    clientId: 'door-auth-sample',
+    clientSecret: 'sample-secret-key',
+    name: 'DoorAuth Portal',
+    appUrl: 'https://localhost:7140',
+    redirectUris: 'https://localhost:7140/signin-oidc',
+    grantTypes: 'authorization_code,refresh_token',
+    scopes: 'openid,profile,email',
+    tenantId: 1,
+    isActive: true
+}</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 3</span>
+                  <h3>Configure OIDC in Program.cs</h3>
+                </div>
+                <p>Set up OpenID Connect authentication with DoorAuth endpoints</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Configure Cookie settings for cross-site SSO
+builder.Services.Configure&lt;CookiePolicyOptions&gt;(options =&gt;
+{
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+    options.Secure = CookieSecurePolicy.Always;
+});
+
+builder.Services.AddAuthentication(options =&gt;
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+})
+.AddCookie(options =&gt;
+{
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+})
+.AddOpenIdConnect(options =&gt;
+{
+    options.ClientId = "door-auth-sample";
+    options.ClientSecret = "sample-secret-key";
+    options.ResponseType = OpenIdConnectResponseType.Code;
+    options.SaveTokens = true;
+    options.UsePkce = true;
+    options.GetClaimsFromUserInfoEndpoint = true;
+
+    options.Scope.Clear();
+    options.Scope.Add("openid");
+    options.Scope.Add("profile");
+    options.Scope.Add("email");
+
+    // Configure DoorAuth OIDC endpoints
+    options.Configuration = new OpenIdConnectConfiguration
+    {
+        Issuer = "https://localhost:3000",
+        AuthorizationEndpoint = "https://localhost:3000/api/oauth/authorize",
+        TokenEndpoint = "https://localhost:3000/api/oauth/token",
+        UserInfoEndpoint = "https://localhost:3000/api/oauth/userinfo",
+        EndSessionEndpoint = "https://localhost:3000/api/oauth/end_session",
+        JwksUri = "https://localhost:3000/.well-known/jwks.json"
+    };
+});</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 4</span>
+                  <h3>Add Authentication Middleware</h3>
+                </div>
+                <p>Enable authentication and authorization in the request pipeline</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>var app = builder.Build();
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseCookiePolicy();
+
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapRazorPages();
+
+app.Run();</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 5</span>
+                  <h3>Create Login/Logout Endpoints</h3>
+                </div>
+                <p>Add endpoints for triggering authentication challenges and sign-out</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>// Login endpoint - triggers OIDC flow
+app.MapGet("/login", () =&gt; Results.Challenge(
+    new AuthenticationProperties { RedirectUri = "/" },
+    new[] { OpenIdConnectDefaults.AuthenticationScheme }
+));
+
+// Logout endpoint - signs out from both app and DoorAuth
+app.MapGet("/logout", async (HttpContext context) =&gt;
+{
+    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme,
+        new AuthenticationProperties { RedirectUri = "/" });
+});</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 6</span>
+                  <h3>Access User Info & Tokens</h3>
+                </div>
+                <p>Retrieve authenticated user claims and access token for API calls</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>// In a Razor Page or Controller
+public class IndexModel : PageModel
+{
+    public string UserName { get; set; }
+    public string AccessToken { get; set; }
+
+    public async Task OnGetAsync()
+    {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            // Get user claims
+            UserName = User.Identity.Name;
+            var email = User.FindFirst("email")?.Value;
+            var tenantId = User.FindFirst("tenantId")?.Value;
+
+            // Get access token for API calls
+            AccessToken = await HttpContext.GetTokenAsync("access_token");
+
+            // Call DoorAuth API with token
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", AccessToken);
+
+            var response = await client.GetAsync(
+                "https://localhost:3000/api/users/me/applications");
+        }
+    }
+}</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 7</span>
+                  <h3>Create Protected Pages</h3>
+                </div>
+                <p>Add authorization to your Razor pages</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>// Pages/Dashboard.cshtml.cs
+[Authorize]
+public class DashboardModel : PageModel
+{
+    public void OnGet()
+    {
+        // Only authenticated users can access this page
+    }
+}
+
+// Pages/Dashboard.cshtml
+@page
+@model DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+&lt;h1&gt;Welcome, @User.Identity?.Name!&lt;/h1&gt;
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+    &lt;p&gt;Email: @User.FindFirst("email")?.Value&lt;/p&gt;
+    &lt;a href="/logout"&gt;Logout&lt;/a&gt;
+}
+else
+{
+    &lt;a href="/login"&gt;Login with DoorAuth&lt;/a&gt;
+}</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 8</span>
+                  <h3>Test Your Integration</h3>
+                </div>
+                <div class="test-checklist">
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Start DoorAuth server: <code>cd server && npm run dev</code></span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Start your ASP.NET app: <code>dotnet run</code></span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Navigate to <code>https://localhost:7140</code></span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Click login - redirects to DoorAuth</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Enter credentials: <code>bd@gmail.com / 1q2w3E*</code></span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Verify redirect back with user info displayed</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Test logout - clears session and redirects</span>
+                  </label>
+                </div>
+              </div>
+
               <div class="info-box">
-                <h4>📚 Full ASP.NET Core Guide</h4>
+                <h4>📚 Working Example: DoorAuthSample</h4>
                 <p>
-                  For complete ASP.NET Core integration instructions, see the
-                  <a
-                    href="https://github.com/alaminmain/DoorAuthServer/tree/main/DoorAuthSample"
-                    target="_blank"
-                    >DoorAuthSample</a
-                  >
-                  project.
+                  See the complete SSO Portal implementation in the
+                  <a href="https://github.com/alaminmain/DoorAuthServer/tree/main/DoorAuthSample" target="_blank">DoorAuthSample</a>
+                  project. It demonstrates fetching user applications and launching them with SSO tokens.
                 </p>
               </div>
             </div>
@@ -1109,38 +1379,469 @@ app.MapGet("/logout", async (HttpContext context) =>
               <div class="integration-step">
                 <div class="step-header">
                   <span class="step-badge">Step 1</span>
-                  <h3>Install Dependencies</h3>
+                  <h3>Create React Project & Install Dependencies</h3>
                 </div>
+                <p>Set up a new React project with Vite and install required packages</p>
                 <div class="code-block">
                   <button class="copy-btn" onclick="copyCode(this)">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                      <path
-                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                      />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                     </svg>
                   </button>
-                  <pre><code>npm install axios react-router-dom</code></pre>
+                  <pre><code># Create new React + TypeScript project
+npm create vite@latest my-app -- --template react-ts
+cd my-app
+
+# Install required dependencies
+npm install axios react-router-dom jwt-decode</code></pre>
                 </div>
               </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 2</span>
+                  <h3>Register Application in DoorAuth</h3>
+                </div>
+                <p>Add your React SPA to DoorAuth via Admin Dashboard or database</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>// In server/prisma/seed.ts, add:
+{
+    clientId: 'todo-app-client',
+    clientSecret: 'todo-secret-key',
+    name: 'Todo App',
+    appUrl: 'http://localhost:5175',
+    redirectUris: 'http://localhost:5175/callback',
+    grantTypes: 'authorization_code,refresh_token',
+    scopes: 'openid,profile,email',
+    tenantId: 1,
+    isActive: true
+}</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 3</span>
+                  <h3>Create Auth Configuration</h3>
+                </div>
+                <p>Define OAuth configuration settings for DoorAuth</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>// src/auth/authConfig.ts
+export const authConfig = {
+    authority: 'https://localhost:3000',      // DoorAuth server
+    clientId: 'todo-app-client',              // Your client ID
+    redirectUri: 'http://localhost:5175/callback',
+    responseType: 'code',                     // Authorization code flow
+    scope: 'openid profile email',            // Requested scopes
+
+    // OAuth endpoints
+    authorizationEndpoint: '/api/oauth/authorize',
+    tokenEndpoint: '/api/oauth/token',
+    userInfoEndpoint: '/api/oauth/userinfo',
+    endSessionEndpoint: '/api/oauth/end_session'
+};</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 4</span>
+                  <h3>Implement PKCE Auth Service</h3>
+                </div>
+                <p>Create the authentication service with PKCE security (prevents code interception attacks)</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>// src/services/AuthService.ts
+import { authConfig } from '../auth/authConfig';
+
+class AuthService {
+    // Generate cryptographically secure PKCE verifier
+    private generateCodeVerifier(): string {
+        const array = new Uint8Array(32);
+        crypto.getRandomValues(array);
+        return Array.from(array, byte =&gt;
+            byte.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Create SHA-256 challenge from verifier
+    private async generateCodeChallenge(verifier: string): Promise&lt;string&gt; {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(verifier);
+        const digest = await crypto.subtle.digest('SHA-256', data);
+        return btoa(String.fromCharCode(...new Uint8Array(digest)))
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+    }
+
+    // Initiate OAuth login with PKCE
+    async login(): Promise&lt;void&gt; {
+        const verifier = this.generateCodeVerifier();
+        const challenge = await this.generateCodeChallenge(verifier);
+
+        // Store verifier for token exchange
+        localStorage.setItem('pkce_verifier', verifier);
+
+        // Build authorization URL
+        const params = new URLSearchParams({
+            client_id: authConfig.clientId,
+            redirect_uri: authConfig.redirectUri,
+            response_type: authConfig.responseType,
+            scope: authConfig.scope,
+            code_challenge: challenge,
+            code_challenge_method: 'S256'
+        });
+
+        // Redirect to DoorAuth
+        window.location.href =
+            `${authConfig.authority}${authConfig.authorizationEndpoint}?${params}`;
+    }
+
+    // Exchange authorization code for tokens
+    async handleCallback(code: string): Promise&lt;string&gt; {
+        const verifier = localStorage.getItem('pkce_verifier');
+        if (!verifier) throw new Error('No PKCE verifier found');
+
+        const response = await fetch(
+            `${authConfig.authority}${authConfig.tokenEndpoint}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    grant_type: 'authorization_code',
+                    code,
+                    redirect_uri: authConfig.redirectUri,
+                    client_id: authConfig.clientId,
+                    code_verifier: verifier
+                })
+            }
+        );
+
+        const data = await response.json();
+        localStorage.removeItem('pkce_verifier');
+        localStorage.setItem('access_token', data.access_token);
+
+        return data.access_token;
+    }
+
+    // Get stored token
+    getToken(): string | null {
+        return localStorage.getItem('access_token');
+    }
+
+    // Logout and redirect
+    logout(): void {
+        localStorage.removeItem('access_token');
+        window.location.href =
+            `${authConfig.authority}${authConfig.endSessionEndpoint}`;
+    }
+}
+
+export const authService = new AuthService();</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 5</span>
+                  <h3>Create Auth Context Provider</h3>
+                </div>
+                <p>Set up React Context for global authentication state management</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>// src/auth/AuthProvider.tsx
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { jwtDecode } from 'jwt-decode';
+import { authService } from '../services/AuthService';
+
+interface User {
+    userId: string;
+    email: string;
+    name: string;
+    tenantId: number;
+    roles: string[];
+    permissions: string[];
+}
+
+interface AuthContextType {
+    user: User | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    login: () =&gt; void;
+    logout: () =&gt; void;
+    handleCallback: (code: string) =&gt; Promise&lt;void&gt;;
+}
+
+const AuthContext = createContext&lt;AuthContextType | null&gt;(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+    const [user, setUser] = useState&lt;User | null&gt;(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() =&gt; {
+        // Check for existing token on mount
+        const token = authService.getToken();
+        if (token) {
+            try {
+                const decoded = jwtDecode&lt;User & { exp: number }&gt;(token);
+                if (decoded.exp * 1000 &gt; Date.now()) {
+                    setUser(decoded);
+                } else {
+                    authService.logout();
+                }
+            } catch {
+                authService.logout();
+            }
+        }
+        setIsLoading(false);
+    }, []);
+
+    const handleCallback = async (code: string) =&gt; {
+        const token = await authService.handleCallback(code);
+        const decoded = jwtDecode&lt;User&gt;(token);
+        setUser(decoded);
+    };
+
+    return (
+        &lt;AuthContext.Provider value={{
+            user,
+            isAuthenticated: !!user,
+            isLoading,
+            login: () =&gt; authService.login(),
+            logout: () =&gt; authService.logout(),
+            handleCallback
+        }}&gt;
+            {children}
+        &lt;/AuthContext.Provider&gt;
+    );
+}
+
+export const useAuth = () =&gt; {
+    const context = useContext(AuthContext);
+    if (!context) throw new Error('useAuth must be used within AuthProvider');
+    return context;
+};</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 6</span>
+                  <h3>Create Callback & Protected Route Components</h3>
+                </div>
+                <p>Handle OAuth callback and protect routes requiring authentication</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>// src/pages/Callback.tsx - Handle OAuth redirect
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../auth/AuthProvider';
+
+export function Callback() {
+    const [searchParams] = useSearchParams();
+    const { handleCallback } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() =&gt; {
+        const code = searchParams.get('code');
+        if (code) {
+            handleCallback(code)
+                .then(() =&gt; navigate('/'))
+                .catch(() =&gt; navigate('/login'));
+        }
+    }, [searchParams, handleCallback, navigate]);
+
+    return &lt;div&gt;Authenticating...&lt;/div&gt;;
+}
+
+// src/components/ProtectedRoute.tsx
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthProvider';
+
+export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+    const { isAuthenticated, isLoading } = useAuth();
+
+    if (isLoading) return &lt;div&gt;Loading...&lt;/div&gt;;
+    if (!isAuthenticated) return &lt;Navigate to="/login" replace /&gt;;
+
+    return &lt;&gt;{children}&lt;/&gt;;
+}</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 7</span>
+                  <h3>Set Up Routes</h3>
+                </div>
+                <p>Configure React Router with authentication routes</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>// src/App.tsx
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './auth/AuthProvider';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { Login } from './pages/Login';
+import { Callback } from './pages/Callback';
+import { Dashboard } from './pages/Dashboard';
+
+function App() {
+    return (
+        &lt;BrowserRouter&gt;
+            &lt;AuthProvider&gt;
+                &lt;Routes&gt;
+                    &lt;Route path="/login" element={&lt;Login /&gt;} /&gt;
+                    &lt;Route path="/callback" element={&lt;Callback /&gt;} /&gt;
+                    &lt;Route path="/" element={
+                        &lt;ProtectedRoute&gt;
+                            &lt;Dashboard /&gt;
+                        &lt;/ProtectedRoute&gt;
+                    } /&gt;
+                &lt;/Routes&gt;
+            &lt;/AuthProvider&gt;
+        &lt;/BrowserRouter&gt;
+    );
+}
+
+export default App;</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 8</span>
+                  <h3>Create Login & Dashboard Pages</h3>
+                </div>
+                <p>Build the UI components for login and protected dashboard</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>// src/pages/Login.tsx
+import { useAuth } from '../auth/AuthProvider';
+
+export function Login() {
+    const { login } = useAuth();
+
+    return (
+        &lt;div className="login-container"&gt;
+            &lt;h1&gt;Welcome to My App&lt;/h1&gt;
+            &lt;p&gt;Please login to continue&lt;/p&gt;
+            &lt;button onClick={login}&gt;
+                Login with DoorAuth
+            &lt;/button&gt;
+        &lt;/div&gt;
+    );
+}
+
+// src/pages/Dashboard.tsx
+import { useAuth } from '../auth/AuthProvider';
+
+export function Dashboard() {
+    const { user, logout } = useAuth();
+
+    return (
+        &lt;div className="dashboard"&gt;
+            &lt;h1&gt;Welcome, {user?.name}!&lt;/h1&gt;
+            &lt;div className="user-info"&gt;
+                &lt;p&gt;&lt;strong&gt;Email:&lt;/strong&gt; {user?.email}&lt;/p&gt;
+                &lt;p&gt;&lt;strong&gt;Tenant ID:&lt;/strong&gt; {user?.tenantId}&lt;/p&gt;
+                &lt;p&gt;&lt;strong&gt;Roles:&lt;/strong&gt; {user?.roles?.join(', ')}&lt;/p&gt;
+            &lt;/div&gt;
+            &lt;button onClick={logout}&gt;Logout&lt;/button&gt;
+        &lt;/div&gt;
+    );
+}</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 9</span>
+                  <h3>Test Your Integration</h3>
+                </div>
+                <div class="test-checklist">
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Start DoorAuth server: <code>cd server && npm run dev</code></span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Start your React app: <code>npm run dev</code></span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Navigate to <code>http://localhost:5175</code></span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Get redirected to /login (protected route)</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Click "Login with DoorAuth" button</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Enter credentials: <code>bd@gmail.com / 1q2w3E*</code></span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Verify redirect to /callback then /dashboard</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Check user info displayed on dashboard</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" />
+                    <span>Test logout - clears token and redirects</span>
+                  </label>
+                </div>
+              </div>
+
               <div class="info-box">
-                <h4>📚 Full React SPA Guide</h4>
+                <h4>📚 Working Example: client_todo</h4>
                 <p>
-                  For complete React integration with OAuth 2.0 PKCE flow, see
-                  the
-                  <a
-                    href="https://github.com/alaminmain/DoorAuthServer/tree/main/client_todo"
-                    target="_blank"
-                    >client_todo</a
-                  >
-                  example project.
+                  See the complete React SPA implementation with SSO Portal integration in the
+                  <a href="https://github.com/alaminmain/DoorAuthServer/tree/main/client_todo" target="_blank">client_todo</a>
+                  project. It includes PKCE flow, SSO token handling, and centralized logout.
                 </p>
               </div>
             </div>
@@ -1152,36 +1853,304 @@ app.MapGet("/logout", async (HttpContext context) =>
               <div class="integration-step">
                 <div class="step-header">
                   <span class="step-badge">Step 1</span>
-                  <h3>Install Passport.js</h3>
+                  <h3>Install Dependencies</h3>
                 </div>
+                <p>Add Passport.js with OpenID Connect strategy</p>
                 <div class="code-block">
                   <button class="copy-btn" onclick="copyCode(this)">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                      <path
-                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                      />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                     </svg>
                   </button>
-                  <pre><code>npm install passport passport-openidconnect express-session</code></pre>
+                  <pre><code>npm install express passport passport-openidconnect express-session</code></pre>
                 </div>
               </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 2</span>
+                  <h3>Configure Passport Strategy</h3>
+                </div>
+                <p>Set up OpenID Connect strategy with DoorAuth endpoints</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>const passport = require('passport');
+const OpenIDConnectStrategy = require('passport-openidconnect');
+
+passport.use('oidc', new OpenIDConnectStrategy({
+    issuer: 'https://localhost:3000',
+    authorizationURL: 'https://localhost:3000/api/oauth/authorize',
+    tokenURL: 'https://localhost:3000/api/oauth/token',
+    userInfoURL: 'https://localhost:3000/api/oauth/userinfo',
+    clientID: 'your-client-id',
+    clientSecret: 'your-client-secret',
+    callbackURL: 'http://localhost:4000/callback',
+    scope: ['openid', 'profile', 'email']
+}, (issuer, profile, done) =&gt; {
+    return done(null, profile);
+}));
+
+passport.serializeUser((user, done) =&gt; done(null, user));
+passport.deserializeUser((user, done) =&gt; done(null, user));</code></pre>
+                </div>
+              </div>
+
+              <div class="integration-step">
+                <div class="step-header">
+                  <span class="step-badge">Step 3</span>
+                  <h3>Set Up Express App</h3>
+                </div>
+                <p>Configure Express with session and Passport middleware</p>
+                <div class="code-block">
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <pre><code>const express = require('express');
+const session = require('express-session');
+
+const app = express();
+
+app.use(session({
+    secret: 'your-session-secret',
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Login route
+app.get('/login', passport.authenticate('oidc'));
+
+// Callback route
+app.get('/callback',
+    passport.authenticate('oidc', { failureRedirect: '/login' }),
+    (req, res) =&gt; res.redirect('/')
+);
+
+// Logout route
+app.get('/logout', (req, res) =&gt; {
+    req.logout(() =&gt; {
+        res.redirect('https://localhost:3000/api/oauth/end_session');
+    });
+});
+
+// Protected route
+app.get('/', ensureAuthenticated, (req, res) =&gt; {
+    res.json({ user: req.user });
+});
+
+function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) return next();
+    res.redirect('/login');
+}
+
+app.listen(4000, () =&gt; console.log('App running on http://localhost:4000'));</code></pre>
+                </div>
+              </div>
+
               <div class="info-box">
                 <h4>📚 API Documentation</h4>
                 <p>
-                  For direct API integration, visit the
-                  <a href="https://localhost:3000/api-docs" target="_blank"
-                    >Swagger documentation</a
-                  >
+                  For direct API integration without Passport.js, visit the
+                  <a href="https://localhost:3000/api-docs" target="_blank">Swagger documentation</a>
                   when the server is running.
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SSO Portal Integration Section -->
+        <div class="sso-portal-section">
+          <div class="section-header" style="margin-top: 3rem;">
+            <h2 class="section-title">SSO Portal Integration Pattern</h2>
+            <p class="section-subtitle">
+              Build an SSO portal that launches applications with seamless authentication
+            </p>
+          </div>
+
+          <div class="sso-flow-diagram">
+            <div class="sso-flow-card">
+              <h3>🚀 How SSO Portal Works</h3>
+              <p>The DoorAuthSample demonstrates a powerful SSO Portal pattern where users login once and can launch multiple applications without re-authenticating.</p>
+
+              <div class="flow-visual">
+                <div class="flow-item">
+                  <div class="flow-icon">1️⃣</div>
+                  <div class="flow-text">
+                    <strong>User visits SSO Portal</strong>
+                    <span>https://localhost:7140</span>
+                  </div>
+                </div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-item">
+                  <div class="flow-icon">2️⃣</div>
+                  <div class="flow-text">
+                    <strong>Portal redirects to DoorAuth</strong>
+                    <span>OIDC authentication flow</span>
+                  </div>
+                </div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-item">
+                  <div class="flow-icon">3️⃣</div>
+                  <div class="flow-text">
+                    <strong>User enters credentials</strong>
+                    <span>bd@gmail.com / 1q2w3E*</span>
+                  </div>
+                </div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-item">
+                  <div class="flow-icon">4️⃣</div>
+                  <div class="flow-text">
+                    <strong>Portal fetches user's apps</strong>
+                    <span>GET /api/users/me/applications</span>
+                  </div>
+                </div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-item">
+                  <div class="flow-icon">5️⃣</div>
+                  <div class="flow-text">
+                    <strong>User clicks app card</strong>
+                    <span>e.g., "Todo App"</span>
+                  </div>
+                </div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-item highlight">
+                  <div class="flow-icon">6️⃣</div>
+                  <div class="flow-text">
+                    <strong>App launches with token</strong>
+                    <span>http://localhost:5175/sso?token=JWT</span>
+                  </div>
+                </div>
+                <div class="flow-arrow-down">↓</div>
+                <div class="flow-item success">
+                  <div class="flow-icon">✅</div>
+                  <div class="flow-text">
+                    <strong>User auto-logged in!</strong>
+                    <span>No re-authentication needed</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sso-flow-card">
+              <h3>💻 Implementation Code</h3>
+
+              <h4>Portal: Launch App with Token (JavaScript)</h4>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                </button>
+                <pre><code>// In DoorAuthSample portal - launch app with SSO token
+function launchApp(appUrl, appName) {
+    // Get access token from OIDC session
+    const token = document.getElementById('accessToken').value;
+
+    // Construct SSO URL with token
+    const cleanAppUrl = appUrl.endsWith('/') ? appUrl.slice(0, -1) : appUrl;
+    const ssoUrl = `${cleanAppUrl}/sso?token=${encodeURIComponent(token)}`;
+
+    // Launch the application
+    window.location.href = ssoUrl;
+}</code></pre>
+              </div>
+
+              <h4>React App: Handle SSO Token</h4>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                </button>
+                <pre><code>// src/pages/SSOHandler.tsx - Handle token from portal
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../auth/AuthProvider';
+
+export function SSOHandler() {
+    const [searchParams] = useSearchParams();
+    const { handleSSOToken } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() =&gt; {
+        const token = searchParams.get('token');
+        if (token) {
+            // Validate and store the token
+            handleSSOToken(token)
+                .then(() =&gt; navigate('/'))
+                .catch(() =&gt; navigate('/login'));
+        } else {
+            navigate('/login');
+        }
+    }, [searchParams, handleSSOToken, navigate]);
+
+    return &lt;div&gt;Processing SSO login...&lt;/div&gt;;
+}
+
+// Add route: &lt;Route path="/sso" element={&lt;SSOHandler /&gt;} /&gt;</code></pre>
+              </div>
+
+              <h4>Centralized Logout</h4>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                </button>
+                <pre><code>// React App - Logout redirects to portal
+const logout = () =&gt; {
+    localStorage.removeItem('access_token');
+    // Redirect to portal logout (which logs out from DoorAuth too)
+    window.location.href = 'https://localhost:7140/logout';
+};
+
+// Portal (ASP.NET) - Cascading logout
+app.MapGet("/logout", async (HttpContext context) =&gt; {
+    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+    // This triggers DoorAuth end_session, logging out everywhere
+});</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="sso-benefits">
+            <h3>Benefits of SSO Portal Pattern</h3>
+            <div class="benefits-grid">
+              <div class="benefit-item">
+                <div class="benefit-icon">🔐</div>
+                <h4>Single Login</h4>
+                <p>Users authenticate once and access all applications</p>
+              </div>
+              <div class="benefit-item">
+                <div class="benefit-icon">🚀</div>
+                <h4>Instant App Launch</h4>
+                <p>No login prompts when launching apps from portal</p>
+              </div>
+              <div class="benefit-item">
+                <div class="benefit-icon">🔄</div>
+                <h4>Centralized Logout</h4>
+                <p>Single logout clears sessions across all applications</p>
+              </div>
+              <div class="benefit-item">
+                <div class="benefit-icon">📱</div>
+                <h4>App Discovery</h4>
+                <p>Portal shows only apps user has access to</p>
               </div>
             </div>
           </div>
@@ -1553,6 +2522,9 @@ app.MapGet("/logout", async (HttpContext context) =>
           </div>
         </div>
         <div class="footer-bottom">
+          <p class="footer-updated">
+            Last updated: <a href="changelog.html">February 4, 2026</a>
+          </p>
           <p>&copy; 2026 DoorAuth. Released under the MIT License.</p>
           <p>Built with Node.js, Express, Prisma, TypeScript, and React</p>
         </div>

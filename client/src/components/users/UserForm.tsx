@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { CheckCircle, ShieldCheck } from 'lucide-react';
 import type { User, RegisterData, Tenant } from '../../types';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -24,10 +25,12 @@ interface UserFormProps {
     user?: User;
     onSubmit: (data: RegisterData) => Promise<void>;
     onCancel: () => void;
+    onVerifyUser?: (userId: string) => void;
+    isSuperAdmin?: boolean;
     isLoading?: boolean;
 }
 
-export default function UserForm({ user, onSubmit, onCancel, isLoading }: UserFormProps) {
+export default function UserForm({ user, onSubmit, onCancel, onVerifyUser, isSuperAdmin = false, isLoading }: UserFormProps) {
     const [tenants, setTenants] = useState<Tenant[]>([]);
     const [loadingConfig, setLoadingConfig] = useState(true);
 
@@ -157,6 +160,42 @@ export default function UserForm({ user, onSubmit, onCancel, isLoading }: UserFo
                 {...register('email')}
                 error={errors.email?.message}
             />
+
+            {/* Email Verification Status & Action - Only shown when editing */}
+            {user && (
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
+                    <div className="flex items-center gap-2">
+                        {user.emailVerified ? (
+                            <>
+                                <CheckCircle size={18} className="text-green-500" />
+                                <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                                    Email Verified
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <ShieldCheck size={18} className="text-orange-500" />
+                                <span className="text-sm font-medium text-orange-600 dark:text-orange-400">
+                                    Email Not Verified
+                                </span>
+                            </>
+                        )}
+                    </div>
+                    {/* Verify Button - Only for Super Admin and unverified users */}
+                    {isSuperAdmin && !user.emailVerified && onVerifyUser && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700 dark:text-green-400 dark:border-green-700 dark:hover:bg-green-900/20"
+                            onClick={() => onVerifyUser(user.id)}
+                        >
+                            <CheckCircle size={16} className="mr-1.5" />
+                            Verify User
+                        </Button>
+                    )}
+                </div>
+            )}
 
             {!user && (
                 <Input
